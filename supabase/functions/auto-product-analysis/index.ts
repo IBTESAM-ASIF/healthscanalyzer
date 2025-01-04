@@ -14,7 +14,7 @@ async function generateProductIdeas(openai: OpenAIApi) {
     messages: [
       {
         role: "system",
-        content: "You are a product researcher. Generate 5 unique consumer products that would benefit from health and safety analysis. Include both common household items and specialized products. Format as JSON array with name and brief description."
+        content: "Generate 5 unique consumer products that would benefit from health analysis. Include both common and specialized products. Format as JSON array."
       }
     ]
   });
@@ -29,23 +29,17 @@ async function analyzeProduct(openai: OpenAIApi, product: any) {
     messages: [
       {
         role: "system",
-        content: `You are a world-class product analyst with expertise in health and safety assessment. Analyze the product thoroughly and provide a detailed JSON response including:
+        content: `Analyze products and provide a detailed JSON response including:
           1. Product name
           2. Category (healthy/restricted/harmful)
           3. Health score (0-100)
-          4. Ingredients list
-          5. Analysis summary
-          6. Pros and cons
-          7. Safety incidents
-          8. Fatal incidents (true/false)
-          9. Serious adverse events (true/false)
-          10. Allergy risks
-          11. Drug interactions
-          12. Environmental impact`
+          4. Analysis summary
+          5. Pros and cons
+          6. Safety considerations`
       },
       {
         role: "user",
-        content: `Analyze this product thoroughly: ${product.name}\n${product.description}`
+        content: `Analyze: ${JSON.stringify(product)}`
       }
     ]
   });
@@ -53,91 +47,63 @@ async function analyzeProduct(openai: OpenAIApi, product: any) {
   return JSON.parse(completion.data.choices[0].message?.content || '{}');
 }
 
-async function storeProductAnalysis(supabaseClient: any, product: any) {
-  console.log(`Storing analysis for product: ${product.name}`);
-  const { data, error } = await supabaseClient
-    .from('products')
-    .insert([{
-      name: product.name,
-      category: product.category?.toLowerCase(),
-      health_score: product.healthScore,
-      ingredients: product.ingredients,
-      analysis_summary: product.analysisSummary,
-      pros: product.pros,
-      cons: product.cons,
-      has_fatal_incidents: product.hasFatalIncidents,
-      has_serious_adverse_events: product.hasSeriousAdverseEvents,
-      allergy_risks: product.allergyRisks,
-      drug_interactions: product.drugInteractions,
-      environmental_impact: product.environmentalImpact,
-      safety_incidents: product.safetyIncidents
-    }]);
-
-  if (error) {
-    console.error('Error storing product:', error);
-    throw error;
-  }
-  return data;
-}
-
 serve(async (req) => {
-  console.log('Starting auto product analysis function...');
-  
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Initialize OpenAI
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiKey) {
-      throw new Error('OpenAI API key not configured');
-    }
+    if (!openAiKey) throw new Error('OpenAI API key not configured');
 
-    const configuration = new Configuration({
-      apiKey: openAiKey,
-    });
+    const configuration = new Configuration({ apiKey: openAiKey });
     const openai = new OpenAIApi(configuration);
     console.log('OpenAI client initialized');
 
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
     console.log('Supabase client initialized');
 
-    // Generate and analyze products
     const productIdeas = await generateProductIdeas(openai);
     console.log(`Generated ${productIdeas.length} product ideas`);
 
-    const analyzedProducts = [];
-    for (const product of productIdeas) {
-      const analysis = await analyzeProduct(openai, product);
-      analyzedProducts.push(analysis);
-    }
+    const analyzedProducts = await Promise.all(
+      productIdeas.map(product => analyzeProduct(openai, product))
+    );
     console.log(`Analyzed ${analyzedProducts.length} products`);
 
-    // Store results
     for (const product of analyzedProducts) {
-      await storeProductAnalysis(supabaseClient, product);
+      await supabaseClient
+        .from('products')
+        .insert([{
+          name: product.name,
+          category: product.category?.toLowerCase(),
+          health_score: product.healthScore,
+          analysis_summary: product.summary,
+          pros: product.pros,
+          cons: product.cons,
+          safety_incidents: product.safetyIncidents || []
+        }]);
     }
-    console.log('All products stored successfully');
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: 'Analysis completed successfully',
         productsAnalyzed: analyzedProducts.length 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in auto-product-analysis:', error);
+    console.error('Error:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500 
+      }
     );
   }
 });
