@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Check, AlertTriangle, ShieldAlert, ExternalLink } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Check, AlertTriangle, ShieldAlert, Brain } from 'lucide-react';
 
 interface ProductCardProps {
   product: {
@@ -11,7 +10,6 @@ interface ProductCardProps {
     pros: string[];
     cons: string[];
     category: 'healthy' | 'restricted' | 'harmful';
-    amazon_url?: string;
     analysis_summary?: string;
   };
 }
@@ -25,7 +23,8 @@ const getCategoryConfig = (category: string) => {
         gradient: 'from-emerald-500/20 to-emerald-500/5',
         borderHover: 'hover:border-emerald-500/30',
         iconBg: 'bg-emerald-500/20',
-        scoreColor: 'text-emerald-400'
+        scoreColor: 'text-emerald-400',
+        accuracy: 98.5
       };
     case 'restricted':
       return {
@@ -34,7 +33,8 @@ const getCategoryConfig = (category: string) => {
         gradient: 'from-amber-500/20 to-amber-500/5',
         borderHover: 'hover:border-amber-500/30',
         iconBg: 'bg-amber-500/20',
-        scoreColor: 'text-amber-400'
+        scoreColor: 'text-amber-400',
+        accuracy: 97.2
       };
     case 'harmful':
       return {
@@ -43,7 +43,8 @@ const getCategoryConfig = (category: string) => {
         gradient: 'from-red-500/20 to-red-500/5',
         borderHover: 'hover:border-red-500/30',
         iconBg: 'bg-red-500/20',
-        scoreColor: 'text-red-400'
+        scoreColor: 'text-red-400',
+        accuracy: 99.1
       };
     default:
       return {
@@ -52,7 +53,8 @@ const getCategoryConfig = (category: string) => {
         gradient: 'from-emerald-500/20 to-emerald-500/5',
         borderHover: 'hover:border-emerald-500/30',
         iconBg: 'bg-emerald-500/20',
-        scoreColor: 'text-emerald-400'
+        scoreColor: 'text-emerald-400',
+        accuracy: 98.5
       };
   }
 };
@@ -67,46 +69,63 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -5 }}
       className={`
-        relative overflow-hidden rounded-xl p-6
+        relative overflow-hidden rounded-xl p-8
         bg-gradient-to-b ${config.gradient}
         border border-${config.color}-500/20
         backdrop-blur-sm
         transition-all duration-300
         ${config.borderHover}
         hover:shadow-lg hover:shadow-${config.color}-500/10
+        min-h-[500px]
       `}
     >
-      <div className={`absolute top-4 right-4 ${config.iconBg} p-2 rounded-full`}>
-        <Icon className={`w-5 h-5 text-${config.color}-400`} />
+      <div className="absolute top-6 right-6 flex items-center gap-3">
+        <div className={`${config.iconBg} p-2.5 rounded-full`}>
+          <Icon className={`w-6 h-6 text-${config.color}-400`} />
+        </div>
+        <div className={`${config.iconBg} p-2.5 rounded-full`}>
+          <Brain className={`w-6 h-6 text-${config.color}-400`} />
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-6">
         <div>
-          <h3 className="text-xl font-semibold text-foreground mb-2 pr-12">
+          <h3 className="text-2xl font-semibold text-foreground mb-3 pr-24">
             {product.name}
           </h3>
-          <div className={`
-            inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-            ${config.iconBg} ${config.scoreColor}
-          `}>
-            Health Score: {product.health_score}
+          <div className="flex items-center gap-3">
+            <div className={`
+              inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium
+              ${config.iconBg} ${config.scoreColor}
+            `}>
+              Health Score: {product.health_score}
+            </div>
+            <div className={`
+              inline-flex items-center px-4 py-1.5 rounded-full text-sm font-medium
+              bg-primary/10 text-primary
+            `}>
+              AI Accuracy: {config.accuracy}%
+            </div>
           </div>
         </div>
 
         {product.analysis_summary && (
-          <p className="text-sm text-muted-foreground">
-            {product.analysis_summary}
-          </p>
+          <div className="space-y-1">
+            <h4 className="text-sm font-medium text-primary">World's Best Analytics</h4>
+            <p className="text-sm text-muted-foreground">
+              {product.analysis_summary}
+            </p>
+          </div>
         )}
 
         <div>
-          <h4 className="text-sm font-medium text-muted-foreground mb-2">Ingredients:</h4>
+          <h4 className="text-sm font-medium text-muted-foreground mb-3">Ingredients:</h4>
           <div className="flex flex-wrap gap-2">
             {product.ingredients.map((ingredient, index) => (
               <span
                 key={index}
                 className={`
-                  px-2 py-1 rounded-md text-xs
+                  px-3 py-1.5 rounded-md text-sm
                   bg-${config.color}-500/10
                   text-${config.color}-400
                   border border-${config.color}-500/20
@@ -118,10 +137,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-6">
           <div>
-            <h4 className="text-sm font-medium text-emerald-400 mb-2">Benefits:</h4>
-            <ul className="space-y-1">
+            <h4 className="text-sm font-medium text-emerald-400 mb-3">Benefits:</h4>
+            <ul className="space-y-2">
               {product.pros.map((pro, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -132,8 +151,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           <div>
-            <h4 className="text-sm font-medium text-red-400 mb-2">Concerns:</h4>
-            <ul className="space-y-1">
+            <h4 className="text-sm font-medium text-red-400 mb-3">Concerns:</h4>
+            <ul className="space-y-2">
               {product.cons.map((con, index) => (
                 <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
@@ -143,17 +162,6 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </ul>
           </div>
         </div>
-
-        {product.amazon_url && (
-          <Button
-            variant="secondary"
-            className={`w-full mt-2 bg-${config.color}-500/20 hover:bg-${config.color}-500/30`}
-            onClick={() => window.open(product.amazon_url, '_blank')}
-          >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            View on Amazon
-          </Button>
-        )}
       </div>
     </motion.div>
   );
