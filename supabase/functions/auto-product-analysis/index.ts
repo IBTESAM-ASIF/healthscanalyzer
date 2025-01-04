@@ -7,48 +7,95 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function generateProductIdeas(openai: OpenAIApi, limit: number = 5) {
-  console.log(`[${new Date().toISOString()}] Starting product idea generation for ${limit} products...`);
+async function searchProducts(openai: OpenAIApi) {
+  console.log(`[${new Date().toISOString()}] Starting product search phase...`);
+  
   const completion = await openai.createChatCompletion({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
-        content: `Generate ${limit} unique consumer products that would benefit from health analysis. Include both common and specialized products. Format as JSON array.`
+        content: `You are a product research expert. Search for 2 unique consumer products that need health analysis. 
+        Include both common items and specialized products. Format as JSON array with fields:
+        - name
+        - description
+        - category (preliminary: healthy/restricted/harmful)
+        - known_ingredients
+        - amazon_url (hypothetical)
+        - potential_risks
+        - initial_safety_concerns`
       }
     ]
   });
 
-  const ideas = JSON.parse(completion.data.choices[0].message?.content || '[]');
-  console.log(`[${new Date().toISOString()}] Successfully generated ${ideas.length} product ideas`);
-  return ideas;
+  const products = JSON.parse(completion.data.choices[0].message?.content || '[]');
+  console.log(`[${new Date().toISOString()}] Found ${products.length} products to analyze`);
+  return products;
 }
 
 async function analyzeProduct(openai: OpenAIApi, product: any) {
-  console.log(`[${new Date().toISOString()}] Analyzing product: ${product.name}`);
+  console.log(`[${new Date().toISOString()}] Starting deep analysis for: ${product.name}`);
+  
   const completion = await openai.createChatCompletion({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
-        content: `Analyze products and provide a detailed JSON response including:
-          1. Product name
-          2. Category (healthy/restricted/harmful)
-          3. Health score (0-100)
-          4. Analysis summary
-          5. Pros and cons
-          6. Safety considerations`
+        content: `You are a product safety expert. Analyze this product thoroughly and provide:
+          1. Detailed health score (0-100)
+          2. Final category determination (healthy/restricted/harmful)
+          3. Comprehensive analysis summary
+          4. Evidence-based pros and cons
+          5. Safety considerations including:
+             - Allergy risks
+             - Drug interactions
+             - Population-specific warnings
+             - Environmental impact
+             - Safety incidents
+          Format as detailed JSON.`
       },
       {
         role: "user",
-        content: `Analyze: ${JSON.stringify(product)}`
+        content: `Analyze this product with all available information: ${JSON.stringify(product)}`
       }
     ]
   });
 
   const analysis = JSON.parse(completion.data.choices[0].message?.content || '{}');
-  console.log(`[${new Date().toISOString()}] Completed analysis for: ${product.name}`);
+  console.log(`[${new Date().toISOString()}] Completed deep analysis for: ${product.name}`);
   return analysis;
+}
+
+async function uploadToDatabase(supabaseClient: any, product: any, analysis: any) {
+  console.log(`[${new Date().toISOString()}] Uploading product to database: ${product.name}`);
+  
+  const { error } = await supabaseClient
+    .from('products')
+    .insert([{
+      name: product.name,
+      amazon_url: product.amazon_url,
+      ingredients: product.known_ingredients,
+      category: analysis.category?.toLowerCase(),
+      health_score: analysis.healthScore,
+      analysis_summary: analysis.summary,
+      pros: analysis.pros,
+      cons: analysis.cons,
+      allergy_risks: analysis.allergyRisks,
+      drug_interactions: analysis.drugInteractions,
+      special_population_warnings: analysis.populationWarnings,
+      environmental_impact: analysis.environmentalImpact,
+      safety_incidents: analysis.safetyIncidents || [],
+      has_fatal_incidents: analysis.hasFatalIncidents || false,
+      has_serious_adverse_events: analysis.hasSeriousAdverseEvents || false,
+      created_at: new Date().toISOString()
+    }]);
+
+  if (error) {
+    console.error(`[${new Date().toISOString()}] Error uploading ${product.name}:`, error);
+    throw error;
+  }
+  
+  console.log(`[${new Date().toISOString()}] Successfully uploaded: ${product.name}`);
 }
 
 serve(async (req) => {
@@ -57,62 +104,48 @@ serve(async (req) => {
   }
 
   try {
-    console.log(`[${new Date().toISOString()}] Starting automatic product analysis...`);
+    const cycleStartTime = new Date();
+    console.log(`[${cycleStartTime.toISOString()}] Starting 10-minute analysis cycle`);
     
-    const { limit = 5 } = await req.json();
-    
+    // Initialize OpenAI
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) {
-      console.error(`[${new Date().toISOString()}] Error: OpenAI API key not configured`);
+      console.error(`[${cycleStartTime.toISOString()}] Error: OpenAI API key not configured`);
       throw new Error('OpenAI API key not configured');
     }
 
     const configuration = new Configuration({ apiKey: openAiKey });
     const openai = new OpenAIApi(configuration);
 
+    // Initialize Supabase
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const productIdeas = await generateProductIdeas(openai, limit);
-    console.log(`[${new Date().toISOString()}] Generated ${productIdeas.length} product ideas`);
-
-    const analyzedProducts = await Promise.all(
-      productIdeas.map(product => analyzeProduct(openai, product))
-    );
-    console.log(`[${new Date().toISOString()}] Analyzed ${analyzedProducts.length} products`);
-
-    // Insert new products with detailed logging
-    for (const product of analyzedProducts) {
-      console.log(`[${new Date().toISOString()}] Inserting product: ${product.name}`);
-      const { error } = await supabaseClient
-        .from('products')
-        .insert([{
-          name: product.name,
-          category: product.category?.toLowerCase(),
-          health_score: product.healthScore,
-          analysis_summary: product.summary,
-          pros: product.pros,
-          cons: product.cons,
-          safety_incidents: product.safetyIncidents || [],
-          created_at: new Date().toISOString()
-        }]);
-      
-      if (error) {
-        console.error(`[${new Date().toISOString()}] Error inserting product ${product.name}:`, error);
-      } else {
-        console.log(`[${new Date().toISOString()}] Successfully inserted product: ${product.name}`);
-      }
+    // Phase 1: Product Search (0-4 minutes)
+    const products = await searchProducts(openai);
+    
+    // Phase 2: Deep Analysis (5-9 minutes)
+    const analysisPromises = products.map(product => analyzeProduct(openai, product));
+    const analyses = await Promise.all(analysisPromises);
+    
+    // Phase 3: Database Upload (minute 10)
+    for (let i = 0; i < products.length; i++) {
+      await uploadToDatabase(supabaseClient, products[i], analyses[i]);
     }
 
-    console.log(`[${new Date().toISOString()}] Product analysis cycle completed successfully`);
+    const cycleEndTime = new Date();
+    const cycleDuration = (cycleEndTime.getTime() - cycleStartTime.getTime()) / 1000;
+    
+    console.log(`[${cycleEndTime.toISOString()}] Cycle completed in ${cycleDuration} seconds`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        productsAnalyzed: analyzedProducts.length,
-        timestamp: new Date().toISOString()
+        productsAnalyzed: products.length,
+        cycleDuration: cycleDuration,
+        timestamp: cycleEndTime.toISOString()
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
