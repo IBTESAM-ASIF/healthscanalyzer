@@ -45,8 +45,8 @@ export const useStats = () => {
         ? (products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0) / totalAnalyzed).toFixed(6)
         : '0.000000';
 
-      // Calculate top performers (products with health score > 80)
-      const topPerformers = products.filter(p => (p.health_score || 0) > 80).length;
+      // Updated: Calculate top performers (products with health score > 93)
+      const topPerformers = products.filter(p => (p.health_score || 0) > 93).length;
 
       // Calculate daily scans (products analyzed in the last 24 hours)
       const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
