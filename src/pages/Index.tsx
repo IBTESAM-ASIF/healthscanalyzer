@@ -7,6 +7,7 @@ import ProductHealthAnalysis from "@/components/ProductHealthAnalysis";
 import ProductExplorer from "@/components/ProductExplorer";
 import { Roadmap } from "@/components/Roadmap";
 import { FAQ } from "@/components/FAQ";
+import { JoinEcosystem } from "@/components/JoinEcosystem";
 
 const Index = () => {
   return (
@@ -21,6 +22,7 @@ const Index = () => {
         <ProductExplorer />
         <Roadmap />
         <FAQ />
+        <JoinEcosystem />
       </div>
     </div>
   );
