@@ -93,7 +93,7 @@ export const Features = () => {
             const Icon = feature.icon;
             return (
               <motion.div key={index} variants={itemVariants}>
-                <Card className="relative group h-full hover:scale-105 transition-transform duration-300 border-0 bg-gradient-to-b from-background/50 to-background/80 backdrop-blur-xl overflow-hidden">
+                <Card className="relative group h-full hover:scale-105 transition-transform duration-300 border border-purple-500/10 bg-gradient-to-b from-background/50 to-background/80 backdrop-blur-xl overflow-hidden shadow-lg hover:border-purple-500/20">
                   <div
                     className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
                   />
