@@ -11,9 +11,10 @@ import { JoinEcosystem } from "@/components/JoinEcosystem";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background overflow-hidden">
       <Navbar />
-      <main className="flex flex-col gap-12 sm:gap-16 md:gap-20">
+      <main className="relative">
+        <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_85%)] pointer-events-none" />
         <Hero />
         <Statistics />
         <Features />
