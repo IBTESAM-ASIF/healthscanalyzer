@@ -3,34 +3,15 @@ import { motion } from "framer-motion";
 import { HeroFeatureCard } from "./hero/HeroFeatureCard";
 import { HeroTimer } from "./hero/HeroTimer";
 import { HeroButtons } from "./hero/HeroButtons";
+import { scrollToSection } from "./navbar/NavMenuItems";
 
 export const Hero = () => {
   const handleLearnMore = () => {
-    const featuresSection = document.getElementById('features');
-    if (featuresSection) {
-      const navbarHeight = 80;
-      const elementPosition = featuresSection.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - navbarHeight;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
+    scrollToSection('features');
   };
 
   const handleViewProducts = () => {
-    const productsSection = document.getElementById('product-explorer');
-    if (productsSection) {
-      const navbarHeight = 80;
-      const elementPosition = productsSection.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - navbarHeight;
-
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
-    }
+    scrollToSection('product-explorer');
   };
 
   const containerVariants = {
