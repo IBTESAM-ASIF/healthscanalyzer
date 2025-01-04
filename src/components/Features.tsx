@@ -1,4 +1,4 @@
-import { Brain, Shield, Zap, ArrowRight, CheckCircle, Star } from "lucide-react";
+import { Brain, Shield, Zap, Star, CheckCircle } from "lucide-react";
 import { Card, CardContent } from "./ui/card";
 import { motion } from "framer-motion";
 
@@ -121,13 +121,6 @@ export const Features = () => {
                           </li>
                         ))}
                       </ul>
-                    </div>
-
-                    <div className="mt-auto pt-6">
-                      <button className="group/btn inline-flex items-center text-purple-400 hover:text-purple-300 transition-colors">
-                        Learn more
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover/btn:translate-x-1 transition-transform" />
-                      </button>
                     </div>
                   </CardContent>
                 </Card>
