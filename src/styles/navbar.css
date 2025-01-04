@@ -1,4 +1,4 @@
-/* Navbar specific styles */
+/* Enhanced Navbar Styles */
 .nav-sticky {
   position: fixed;
   top: 0;
@@ -7,21 +7,77 @@
   z-index: 50;
 }
 
-/* Enhanced glass effect for navbar */
+/* Improved glass effect for navbar */
 .nav-glass {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Smooth scroll behavior for the whole page */
+/* Enhanced smooth scroll behavior */
 html {
   scroll-behavior: smooth;
   scroll-padding-top: 5rem;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments with improved mobile experience */
 @media (max-width: 1024px) {
   .nav-mobile {
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
   }
+  
+  .nav-mobile-menu {
+    transition: all 0.3s ease;
+  }
+}
+
+/* Enhanced hover effects */
+.nav-link {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, #8B5CF6, #D946EF);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Improved focus states */
+.nav-focus-ring {
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.nav-focus-ring:focus-visible {
+  ring: 2px;
+  ring-offset: 2px;
+  ring-color: rgba(139, 92, 246, 0.5);
+}
+
+/* Enhanced mobile menu animation */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.nav-mobile-menu-enter {
+  animation: slideIn 0.3s ease forwards;
 }
