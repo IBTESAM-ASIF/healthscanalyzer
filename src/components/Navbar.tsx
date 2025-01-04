@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "./ui/use-toast";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -43,9 +45,9 @@ const Navbar = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 80; // Adjusted offset to account for fixed navbar
+      const navbarHeight = 80;
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.scrollY - offset;
+      const offsetPosition = elementPosition + window.scrollY - navbarHeight;
 
       window.scrollTo({
         top: offsetPosition,
@@ -53,21 +55,27 @@ const Navbar = () => {
       });
       setIsMobileMenuOpen(false);
     } else {
-      console.error(`Section with id "${id}" not found. Available sections:`, 
-        document.querySelectorAll('section').forEach(section => 
-          console.log(section.id)
-        )
-      );
+      console.error(`Section with id "${id}" not found`);
+      toast({
+        title: "Navigation Error",
+        description: `Could not find section "${id}". Please try again later.`,
+        variant: "destructive",
+      });
+      
+      // Log available sections for debugging
+      const availableSections = Array.from(document.querySelectorAll('section')).map(section => section.id);
+      console.log('Available sections:', availableSections);
     }
   };
 
   const sections = [
     { id: "hero", label: "Home" },
-    { id: "features", label: "Features & Benefits" },
-    { id: "product-health-analysis", label: "Product Health Analysis" },
-    { id: "product-explorer", label: "Explore Our Products" },
-    { id: "roadmap", label: "Vision & Roadmap" },
-    { id: "faq", label: "Frequently Asked Questions" },
+    { id: "statistics", label: "Statistics" },
+    { id: "features", label: "Features" },
+    { id: "health-analysis", label: "Health Analysis" },
+    { id: "product-explorer", label: "Products" },
+    { id: "roadmap", label: "Roadmap" },
+    { id: "faq", label: "FAQ" },
     { id: "join-ecosystem", label: "Join Us" }
   ];
 

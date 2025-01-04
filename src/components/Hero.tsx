@@ -8,14 +8,28 @@ export const Hero = () => {
   const handleLearnMore = () => {
     const featuresSection = document.getElementById('features');
     if (featuresSection) {
-      featuresSection.scrollIntoView({ behavior: 'smooth' });
+      const navbarHeight = 80;
+      const elementPosition = featuresSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
   const handleViewProducts = () => {
     const productsSection = document.getElementById('product-explorer');
     if (productsSection) {
-      productsSection.scrollIntoView({ behavior: 'smooth' });
+      const navbarHeight = 80;
+      const elementPosition = productsSection.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.scrollY - navbarHeight;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -58,7 +72,7 @@ export const Hero = () => {
   ];
 
   return (
-    <section className="min-h-[90vh] flex items-center justify-center py-4">
+    <section id="hero" className="min-h-[90vh] flex items-center justify-center py-4">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 via-violet-500/5 to-background/90" />
