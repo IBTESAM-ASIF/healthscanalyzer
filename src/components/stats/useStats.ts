@@ -16,7 +16,7 @@ export const useStats = () => {
       setIsLoading(true);
       const { data: products, error } = await supabase
         .from('products')
-        .select('category, health_score, analysis_cost')
+        .select('category, health_score, analysis_cost, created_at, has_fatal_incidents, has_serious_adverse_events, environmental_impact')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -27,16 +27,50 @@ export const useStats = () => {
         return;
       }
 
+      // Calculate all statistics
       const totalAnalyzed = products.length;
       const healthyProducts = products.filter(p => p.category === 'healthy').length;
       const harmfulProducts = products.filter(p => p.category === 'harmful').length;
       const moderateRisk = products.filter(p => p.category === 'restricted').length;
+      
       const avgHealthScore = products.length > 0 
-        ? products.reduce((acc, curr) => acc + (curr.health_score || 0), 0) / totalAnalyzed 
+        ? Math.round(products.reduce((acc, curr) => acc + (curr.health_score || 0), 0) / totalAnalyzed)
         : 0;
+
+      const highRiskProducts = products.filter(
+        p => p.has_fatal_incidents || p.has_serious_adverse_events
+      ).length;
+
       const avgAnalysisCost = products.length > 0
-        ? products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0) / totalAnalyzed
-        : 0;
+        ? (products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0) / totalAnalyzed).toFixed(6)
+        : '0.000000';
+
+      // Calculate top performers (products with health score > 80)
+      const topPerformers = products.filter(p => (p.health_score || 0) > 80).length;
+
+      // Calculate daily scans (products analyzed in the last 24 hours)
+      const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const dailyScans = products.filter(
+        p => new Date(p.created_at) > last24Hours
+      ).length;
+
+      // Calculate accuracy rate (assuming products with health score are accurately analyzed)
+      const accuracyRate = Math.round(
+        (products.filter(p => p.health_score !== null).length / totalAnalyzed) * 100
+      );
+
+      // Count unique ingredients across all products
+      const uniqueIngredients = new Set(
+        products.flatMap(p => p.ingredients || [])
+      ).size;
+
+      // Calculate active users (unique analyses in the last 7 days)
+      const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      const activeUsers = new Set(
+        products
+          .filter(p => new Date(p.created_at) > last7Days)
+          .map(p => p.created_at.split('T')[0])
+      ).size;
 
       setStats(prev => prev.map(stat => {
         switch(stat.title) {
@@ -49,9 +83,21 @@ export const useStats = () => {
           case "Moderate Risk":
             return { ...stat, value: moderateRisk.toString() };
           case "Average Health Score":
-            return { ...stat, value: `${Math.round(avgHealthScore)}%` };
+            return { ...stat, value: `${avgHealthScore}%` };
+          case "High Risk Products":
+            return { ...stat, value: highRiskProducts.toString() };
           case "Avg Analysis Cost":
-            return { ...stat, value: `$${avgAnalysisCost.toFixed(6)}` };
+            return { ...stat, value: `$${avgAnalysisCost}` };
+          case "Top Performers":
+            return { ...stat, value: topPerformers.toString() };
+          case "Active Users":
+            return { ...stat, value: activeUsers.toString() };
+          case "Daily Scans":
+            return { ...stat, value: dailyScans.toString() };
+          case "Accuracy Rate":
+            return { ...stat, value: `${accuracyRate}%` };
+          case "Total Ingredients":
+            return { ...stat, value: uniqueIngredients.toString() };
           default:
             return stat;
         }

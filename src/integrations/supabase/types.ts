@@ -13,6 +13,7 @@ export type Database = {
         Row: {
           allergy_risks: string[] | null
           amazon_url: string | null
+          analysis_cost: number | null
           analysis_date: string | null
           analysis_summary: string | null
           category:
@@ -35,6 +36,7 @@ export type Database = {
         Insert: {
           allergy_risks?: string[] | null
           amazon_url?: string | null
+          analysis_cost?: number | null
           analysis_date?: string | null
           analysis_summary?: string | null
           category?:
@@ -57,6 +59,7 @@ export type Database = {
         Update: {
           allergy_risks?: string[] | null
           amazon_url?: string | null
+          analysis_cost?: number | null
           analysis_date?: string | null
           analysis_summary?: string | null
           category?:
