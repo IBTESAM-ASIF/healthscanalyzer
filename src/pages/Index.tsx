@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Statistics from "@/components/Statistics";
 import { HealthAnalysis } from "@/components/HealthAnalysis";
 import ProductHealthAnalysis from "@/components/ProductHealthAnalysis";
+import ProductExplorer from "@/components/ProductExplorer";
 
 const Index = () => {
   return (
@@ -17,6 +18,7 @@ const Index = () => {
         <Features />
         <HealthAnalysis />
         <ProductHealthAnalysis />
+        <ProductExplorer />
         <HealthCategories />
         <Mission />
       </div>
