@@ -1,20 +1,73 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
-
-const data = [
-  { date: 'Dec 24', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Dec 25', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Dec 26', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Dec 27', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Dec 28', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Dec 29', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Dec 30', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Dec 31', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Jan 01', healthy: 35, restricted: 20, harmful: 15 },
-  { date: 'Jan 02', healthy: 35, restricted: 20, harmful: 15 },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 const ProductHealthAnalysis = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchAnalysisData = async () => {
+      try {
+        const endDate = new Date();
+        const startDate = new Date(endDate);
+        startDate.setDate(startDate.getDate() - 10);
+
+        const { data: products, error } = await supabase
+          .from('products')
+          .select('category, created_at')
+          .gte('created_at', startDate.toISOString())
+          .lte('created_at', endDate.toISOString())
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+
+        const dailyData = [];
+        for (let i = 0; i < 10; i++) {
+          const date = new Date(endDate);
+          date.setDate(date.getDate() - i);
+          const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+          
+          const dayProducts = products.filter(p => 
+            new Date(p.created_at).toDateString() === date.toDateString()
+          );
+
+          dailyData.unshift({
+            date: dateStr,
+            healthy: dayProducts.filter(p => p.category === 'healthy').length,
+            restricted: dayProducts.filter(p => p.category === 'restricted').length,
+            harmful: dayProducts.filter(p => p.category === 'harmful').length,
+          });
+        }
+
+        setData(dailyData);
+      } catch (error) {
+        console.error('Error fetching analysis data:', error);
+      }
+    };
+
+    fetchAnalysisData();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        () => {
+          fetchAnalysisData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   return (
     <section className="py-20 relative overflow-hidden">
       {/* Background Effects */}

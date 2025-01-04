@@ -1,7 +1,24 @@
 import { Button } from "./ui/button";
 import { ArrowDown, Star } from "lucide-react";
+import React, { useState, useEffect } from "react";
 
 export const Hero = () => {
+  const [timeLeft, setTimeLeft] = useState('2:00');
+
+  useEffect(() => {
+    const updateTimer = () => {
+      const now = new Date();
+      const minutes = 9 - (now.getMinutes() % 10);
+      const seconds = 59 - now.getSeconds();
+      setTimeLeft(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 bg-gradient-to-b from-background via-background/95 to-background/90">
       {/* Enhanced Grid Background with Fade Effect */}
@@ -74,7 +91,7 @@ export const Hero = () => {
             <span className="flex items-center gap-3">
               <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse" />
               <span className="font-medium">Next product analysis in: </span>
-              <span className="text-primary font-mono">2:07</span>
+              <span className="text-primary font-mono">{timeLeft}</span>
             </span>
           </div>
 
