@@ -7,14 +7,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function generateProductIdeas(openai: OpenAIApi) {
-  console.log('Generating product ideas...');
+async function generateProductIdeas(openai: OpenAIApi, limit: number = 5) {
+  console.log(`Generating ${limit} product ideas...`);
   const completion = await openai.createChatCompletion({
     model: "gpt-4o-mini",
     messages: [
       {
         role: "system",
-        content: "Generate 3 unique consumer products that would benefit from health analysis. Include both common and specialized products. Format as JSON array."
+        content: `Generate ${limit} unique consumer products that would benefit from health analysis. Include both common and specialized products. Format as JSON array.`
       }
     ]
   });
@@ -55,6 +55,8 @@ serve(async (req) => {
   try {
     console.log('Starting automatic product analysis...');
     
+    const { limit = 5 } = await req.json();
+    
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) throw new Error('OpenAI API key not configured');
 
@@ -72,14 +74,16 @@ serve(async (req) => {
       .select('*', { count: 'exact', head: true });
 
     if (count && count >= 50) {
-      console.log('Product limit reached, skipping generation');
-      return new Response(
-        JSON.stringify({ success: true, message: 'Product limit reached' }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      console.log('Product limit reached, removing oldest products...');
+      // Remove oldest products to make room for new ones
+      await supabaseClient
+        .from('products')
+        .delete()
+        .order('created_at', { ascending: true })
+        .limit(limit);
     }
 
-    const productIdeas = await generateProductIdeas(openai);
+    const productIdeas = await generateProductIdeas(openai, limit);
     console.log(`Generated ${productIdeas.length} product ideas`);
 
     const analyzedProducts = await Promise.all(
@@ -87,8 +91,8 @@ serve(async (req) => {
     );
     console.log(`Analyzed ${analyzedProducts.length} products`);
 
-    for (const product of analyzedProducts) {
-      await supabaseClient
+    const insertPromises = analyzedProducts.map(product => 
+      supabaseClient
         .from('products')
         .insert([{
           name: product.name,
@@ -97,9 +101,12 @@ serve(async (req) => {
           analysis_summary: product.summary,
           pros: product.pros,
           cons: product.cons,
-          safety_incidents: product.safetyIncidents || []
-        }]);
-    }
+          safety_incidents: product.safetyIncidents || [],
+          created_at: new Date().toISOString()
+        }])
+    );
+
+    await Promise.all(insertPromises);
 
     return new Response(
       JSON.stringify({ 
