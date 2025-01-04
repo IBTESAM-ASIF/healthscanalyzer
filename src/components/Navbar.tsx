@@ -32,7 +32,6 @@ const Navbar = () => {
         },
         (payload) => {
           console.log('Database change:', payload);
-          // You can dispatch actions or update state here based on the changes
         }
       )
       .subscribe();
@@ -45,24 +44,25 @@ const Navbar = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const offset = 80;
+      const offset = 80; // Adjusted offset to account for fixed navbar
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      const offsetPosition = elementPosition + window.scrollY - offset;
 
       window.scrollTo({
         top: offsetPosition,
         behavior: "smooth"
       });
       setIsMobileMenuOpen(false);
+    } else {
+      console.log(`Section with id "${id}" not found`);
     }
   };
 
   const sections = [
-    { id: "home", label: "Home" },
-    { id: "statistics", label: "Platform Statistics" },
+    { id: "hero", label: "Home" },
     { id: "features", label: "Features & Benefits" },
-    { id: "health-analysis", label: "Product Health Analysis" },
-    { id: "product-health", label: "Explore Our Products" },
+    { id: "product-health-analysis", label: "Product Health Analysis" },
+    { id: "product-explorer", label: "Explore Our Products" },
     { id: "roadmap", label: "Vision & Roadmap" },
     { id: "faq", label: "Frequently Asked Questions" },
     { id: "join-ecosystem", label: "Join Us" }
@@ -106,7 +106,7 @@ const Navbar = () => {
           <div className="flex-shrink-0">
             <h1 
               className="text-xl font-bold tracking-tighter cursor-pointer bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent hover:from-purple-500 hover:via-pink-600 hover:to-purple-700 transition-all duration-300"
-              onClick={() => scrollToSection('home')}
+              onClick={() => scrollToSection('hero')}
             >
               HealthScanalyzer
             </h1>
