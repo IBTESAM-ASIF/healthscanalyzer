@@ -99,21 +99,24 @@ const Statistics = () => {
     }
   ]);
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        setIsLoading(true);
         const { data: products, error } = await supabase
           .from('products')
           .select('category, health_score');
         
         if (error) throw error;
 
-        // Handle empty state
+        // Handle empty state with more informative message
         if (!products || products.length === 0) {
+          setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
           toast({
-            title: "No Data Available",
-            description: "Waiting for product analysis data...",
+            title: "Initializing Analysis",
+            description: "The system is currently analyzing products. Data will appear shortly.",
           });
           return;
         }
@@ -149,6 +152,8 @@ const Statistics = () => {
           description: "Failed to fetch statistics. Please try again later.",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -189,7 +194,13 @@ const Statistics = () => {
       
       <div className="relative container mx-auto px-4">
         <StatsHeader />
-        <StatsGrid stats={stats} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <StatsGrid stats={stats} />
+        )}
       </div>
     </section>
   );
