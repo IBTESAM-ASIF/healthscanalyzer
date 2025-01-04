@@ -32,13 +32,13 @@ const Navbar = () => {
 
   const sections = [
     { id: "home", label: "Home" },
-    { id: "statistics", label: "Statistics" },
-    { id: "features", label: "Features" },
-    { id: "health-analysis", label: "Health Analysis" },
-    { id: "product-health", label: "Product Health" },
-    { id: "product-explorer", label: "Product Explorer" },
-    { id: "roadmap", label: "Roadmap" },
-    { id: "faq", label: "FAQ" }
+    { id: "statistics", label: "Platform Statistics" },
+    { id: "features", label: "Features & Benefits" },
+    { id: "health-analysis", label: "Product Health Analysis" },
+    { id: "product-health", label: "Explore Our Products" },
+    { id: "roadmap", label: "Vision & Roadmap" },
+    { id: "faq", label: "Frequently Asked Questions" },
+    { id: "join-ecosystem", label: "Join Us" }
   ];
 
   const socialLinks = [
