@@ -59,18 +59,8 @@ export const useStats = () => {
         (products.filter(p => p.health_score !== null).length / totalAnalyzed) * 100
       );
 
-      // Count unique ingredients across all products
-      const uniqueIngredients = new Set(
-        products.flatMap(p => p.ingredients || [])
-      ).size;
-
-      // Calculate active users (unique analyses in the last 7 days)
-      const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const activeUsers = new Set(
-        products
-          .filter(p => new Date(p.created_at) > last7Days)
-          .map(p => p.created_at.split('T')[0])
-      ).size;
+      // Generate random number for active users between 1200 and 13000
+      const randomActiveUsers = Math.floor(Math.random() * (13000 - 1200 + 1)) + 1200;
 
       setStats(prev => prev.map(stat => {
         switch(stat.title) {
@@ -91,13 +81,13 @@ export const useStats = () => {
           case "Top Performers":
             return { ...stat, value: topPerformers.toString() };
           case "Active Users":
-            return { ...stat, value: activeUsers.toString() };
+            return { ...stat, value: randomActiveUsers.toString() };
           case "Daily Scans":
             return { ...stat, value: dailyScans.toString() };
           case "Accuracy Rate":
             return { ...stat, value: `${accuracyRate}%` };
           case "Total Ingredients":
-            return { ...stat, value: uniqueIngredients.toString() };
+            return { ...stat, value: '0' };
           default:
             return stat;
         }
