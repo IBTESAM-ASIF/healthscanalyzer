@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Shield, Leaf } from 'lucide-react';
+import { AlertTriangle, Shield, Leaf, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { HealthScore } from './card/HealthScore';
 import { AIAnalysis } from './card/AIAnalysis';
@@ -11,6 +11,7 @@ interface ProductCardProps {
   product: {
     id: string;
     name: string;
+    company?: string;
     category: 'healthy' | 'restricted' | 'harmful';
     ingredients?: string[];
     health_score?: number;
@@ -65,11 +66,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         hover:border-gray-700 transition-all duration-300 hover:shadow-xl
       `}>
         <div className="space-y-6">
-          <div className="flex items-start justify-between">
-            <h3 className="text-xl font-semibold text-white">{product.name}</h3>
-            <Badge className={`${categoryColors[product.category]} text-white shadow-lg`}>
-              {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
-            </Badge>
+          <div className="space-y-4">
+            <div className="flex items-start justify-between">
+              <h3 className="text-xl font-semibold text-white">{product.name}</h3>
+              <Badge className={`${categoryColors[product.category]} text-white shadow-lg`}>
+                {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
+              </Badge>
+            </div>
+            {product.company && (
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Building2 className="w-4 h-4" />
+                <span>{product.company}</span>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4">
