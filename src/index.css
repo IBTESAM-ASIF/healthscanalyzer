@@ -42,37 +42,61 @@
   }
 }
 
+/* Enhanced Grid Background */
 .bg-grid-white\/10 {
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='rgb(255 255 255 / 0.1)'%3e%3cpath d='M0 .5H31.5V32'/%3e%3c/svg%3e");
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  mask-image: radial-gradient(black, transparent 85%);
 }
 
+/* Improved Cosmic Gradient */
 .bg-gradient-cosmic {
-  background: linear-gradient(225deg, rgba(123, 31, 162, 0.15) 0%, rgba(103, 58, 183, 0.15) 100%);
+  background: linear-gradient(225deg, 
+    rgba(139, 92, 246, 0.15) 0%,
+    rgba(217, 70, 239, 0.15) 50%,
+    rgba(14, 165, 233, 0.15) 100%
+  );
 }
 
+/* Enhanced Text Gradient */
 .text-gradient {
-  background: linear-gradient(to right, #ff69b4, #da70d6);
+  background: linear-gradient(to right, #8B5CF6, #D946EF, #0EA5E9);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: textShine 8s linear infinite;
 }
 
+/* Improved Card Styles */
 .card-gradient {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.05) 0%, 
+    rgba(255, 255, 255, 0.02) 100%
+  );
   backdrop-filter: blur(10px);
 }
 
+/* Enhanced Glow Effects */
 .glow {
-  text-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
 }
 
 .card-glow {
-  box-shadow: 0 0 20px rgba(255, 105, 180, 0.1);
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.1);
 }
 
+/* Futuristic Hero Gradient */
 .hero-gradient {
-  background: linear-gradient(135deg, rgba(123, 31, 162, 0.2) 0%, rgba(103, 58, 183, 0.2) 100%);
+  background: linear-gradient(135deg,
+    rgba(139, 92, 246, 0.2) 0%,
+    rgba(217, 70, 239, 0.2) 50%,
+    rgba(14, 165, 233, 0.2) 100%
+  );
 }
 
+/* Enhanced Glass Effect */
 .glass-effect {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(10px);
@@ -85,14 +109,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Improved Cosmic Purple Gradient */
 .cosmic-purple-gradient {
   background: linear-gradient(180deg, #2D1B69 0%, #1A103F 100%);
 }
 
-.neon-border {
-  border: 1px solid rgba(255, 105, 180, 0.3);
-}
-
+/* Enhanced Hover Effects */
 .hover-lift {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -102,36 +124,28 @@
   box-shadow: 0 10px 20px rgba(139, 92, 246, 0.1);
 }
 
-@keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient 8s ease infinite;
-}
-
 /* Responsive Typography */
 @layer utilities {
   .text-responsive {
-    @apply text-base md:text-lg lg:text-xl;
+    @apply text-base sm:text-lg md:text-xl lg:text-2xl;
   }
   
   .heading-responsive {
-    @apply text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
+    @apply text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl;
   }
   
   .subheading-responsive {
-    @apply text-xl md:text-2xl lg:text-3xl;
+    @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl;
   }
 }
 
 /* Enhanced Card Styles */
 .enhanced-card {
   @apply relative overflow-hidden rounded-xl p-6 transition-all duration-300;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.05) 0%, 
+    rgba(255, 255, 255, 0.02) 100%
+  );
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -142,7 +156,7 @@
   box-shadow: 0 10px 30px -5px rgba(139, 92, 246, 0.2);
 }
 
-/* Improved Button Styles */
+/* Futuristic Button Styles */
 .button-glow {
   @apply relative overflow-hidden transition-all duration-300;
   background: linear-gradient(45deg, #8B5CF6, #D946EF);
@@ -155,17 +169,12 @@
 
 /* Enhanced Container Styles */
 .container-responsive {
-  @apply px-4 md:px-6 lg:px-8 mx-auto max-w-7xl;
+  @apply px-4 sm:px-6 md:px-8 lg:px-12 mx-auto max-w-7xl;
 }
 
 /* Improved Section Spacing */
 .section-spacing {
-  @apply py-12 md:py-16 lg:py-20;
-}
-
-/* Better Mobile Navigation */
-.mobile-menu {
-  @apply fixed inset-0 z-50 transform transition-transform duration-300;
+  @apply py-12 sm:py-16 md:py-20 lg:py-24;
 }
 
 /* Loading States */
@@ -189,4 +198,81 @@
 .image-optimized {
   @apply object-cover w-full h-full;
   loading: lazy;
+}
+
+/* Animations */
+@keyframes textShine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .7;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
+  
+  .enhanced-card {
+    @apply p-4;
+  }
+  
+  .text-gradient {
+    background-size: 150% auto;
+  }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .container {
+    @apply px-6;
+  }
+  
+  .enhanced-card {
+    @apply p-5;
+  }
+}
+
+/* Desktop and Larger Screens */
+@media (min-width: 1025px) {
+  .container {
+    @apply px-8;
+  }
+  
+  .enhanced-card {
+    @apply p-6;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none;
+  }
 }

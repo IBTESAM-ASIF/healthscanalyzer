@@ -82,24 +82,26 @@ export const Hero = () => {
           {/* Enhanced CTA Buttons with Better Hover Effects */}
           <div className="flex flex-col sm:flex-row gap-6 mt-12">
             <Button 
-              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:scale-105"
+              variant="cosmic"
+              size="lg"
+              className="rounded-full group relative overflow-hidden"
               onClick={handleLearnMore}
             >
               <span className="relative z-10 flex items-center gap-2 text-lg font-medium">
                 Learn More
                 <ArrowDown className="ml-2 h-5 w-5 transition-transform group-hover:translate-y-1" />
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </Button>
             <Button 
-              className="bg-background/20 backdrop-blur-sm border border-purple-500/30 hover:bg-background/30 text-white px-8 py-6 rounded-full group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:scale-105"
+              variant="glow"
+              size="lg"
+              className="rounded-full group relative overflow-hidden"
               onClick={handleViewProducts}
             >
               <span className="relative z-10 flex items-center gap-2 text-lg font-medium">
                 View Products
                 <Star className="ml-2 h-5 w-5 transition-transform group-hover:rotate-45" />
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </Button>
           </div>
 
