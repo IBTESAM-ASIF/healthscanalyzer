@@ -1,25 +1,23 @@
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useAnalysisTrigger = () => {
   const { toast } = useToast();
 
   const triggerInitialAnalysis = async () => {
     try {
-      const response = await fetch(
-        'https://bwuvybxxfpcxoqtsfjgs.supabase.co/functions/v1/auto-product-analysis',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ trigger: 'initial' }),
-        }
-      );
+      console.log('Triggering initial analysis...');
+      
+      const { data, error } = await supabase.functions.invoke('auto-product-analysis', {
+        body: { trigger: 'initial' }
+      });
 
-      if (!response.ok) {
-        throw new Error('Failed to trigger analysis');
+      if (error) {
+        console.error('Error from edge function:', error);
+        throw error;
       }
+
+      console.log('Analysis trigger response:', data);
 
       toast({
         title: "Analysis Started",
