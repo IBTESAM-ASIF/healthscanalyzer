@@ -2,128 +2,14 @@ import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { debounce } from 'lodash';
+import { initialStats } from './initialStats';
+import { useAnalysisTrigger } from './useAnalysisTrigger';
 
 export const useStats = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState([
-    {
-      title: "Total Analyzed",
-      value: "0",
-      icon: BarChart3,
-      color: "bg-blue-600/10",
-      iconColor: "text-blue-600"
-    },
-    {
-      title: "Healthy Products",
-      value: "0",
-      icon: CheckCircle,
-      color: "bg-green-600/10",
-      iconColor: "text-green-600"
-    },
-    {
-      title: "Harmful Products",
-      value: "0",
-      icon: XCircle,
-      color: "bg-red-600/10",
-      iconColor: "text-red-600"
-    },
-    {
-      title: "Moderate Risk",
-      value: "0",
-      icon: Timer,
-      color: "bg-yellow-600/10",
-      iconColor: "text-yellow-600"
-    },
-    {
-      title: "Average Health Score",
-      value: "0%",
-      icon: TrendingUp,
-      color: "bg-purple-600/10",
-      iconColor: "text-purple-600"
-    },
-    {
-      title: "High Risk Products",
-      value: "0",
-      icon: AlertTriangle,
-      color: "bg-orange-600/10",
-      iconColor: "text-orange-600"
-    },
-    {
-      title: "Avg Analysis Cost",
-      value: "$0.00",
-      icon: Bolt,
-      color: "bg-teal-600/10",
-      iconColor: "text-teal-600"
-    },
-    {
-      title: "Top Performers",
-      value: "0",
-      icon: Award,
-      color: "bg-cyan-600/10",
-      iconColor: "text-cyan-600"
-    },
-    {
-      title: "Active Users",
-      value: "0",
-      icon: Users,
-      color: "bg-indigo-600/10",
-      iconColor: "text-indigo-600"
-    },
-    {
-      title: "Daily Scans",
-      value: "0",
-      icon: Brain,
-      color: "bg-pink-600/10",
-      iconColor: "text-pink-600"
-    },
-    {
-      title: "Accuracy Rate",
-      value: "0%",
-      icon: Shield,
-      color: "bg-emerald-600/10",
-      iconColor: "text-emerald-600"
-    },
-    {
-      title: "Total Ingredients",
-      value: "0",
-      icon: Leaf,
-      color: "bg-violet-600/10",
-      iconColor: "text-violet-600"
-    }
-  ]);
-
-  const triggerInitialAnalysis = async () => {
-    try {
-      const response = await fetch(
-        'https://bwuvybxxfpcxoqtsfjgs.supabase.co/functions/v1/auto-product-analysis',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-          },
-          body: JSON.stringify({ trigger: 'initial' }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to trigger analysis');
-      }
-
-      toast({
-        title: "Analysis Started",
-        description: "Initial product analysis has been triggered. Data will appear shortly.",
-      });
-    } catch (error) {
-      console.error('Error triggering analysis:', error);
-      toast({
-        title: "Error",
-        description: "Failed to trigger initial analysis. Please try again later.",
-        variant: "destructive",
-      });
-    }
-  };
+  const [stats, setStats] = useState(initialStats);
+  const { triggerInitialAnalysis } = useAnalysisTrigger();
 
   const fetchStats = async () => {
     try {
