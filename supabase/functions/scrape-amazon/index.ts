@@ -23,7 +23,6 @@ serve(async (req) => {
     })
     const openai = new OpenAIApi(configuration)
 
-    // Get random Amazon product categories for variety
     const categories = [
       "skincare",
       "food supplements",
@@ -34,44 +33,88 @@ serve(async (req) => {
     ]
     const randomCategory = categories[Math.floor(Math.random() * categories.length)]
 
-    // Enhanced analysis prompt for more comprehensive research
     const completion = await openai.createChatCompletion({
-      model: "gpt-4o",  // Using the more powerful model for better analysis
+      model: "gpt-4o",
       messages: [{
         role: "system",
-        content: `You are an expert product researcher and analyst with deep knowledge in health, nutrition, chemistry, and consumer safety. Your task is to perform comprehensive analysis of products considering:
+        content: `You are an expert product researcher and analyst specializing in consumer safety, toxicology, and public health. Your analysis must include:
 
-1. Historical context and development of ingredients
-2. Scientific research and clinical studies
-3. Global regulatory status and safety assessments
-4. Environmental impact and sustainability
-5. Manufacturing processes and quality control
-6. Potential interactions and contraindications
-7. Population-specific considerations (age groups, health conditions)
-8. Long-term health implications
-9. Alternative and comparative product analysis
-10. Latest scientific literature and research findings
+1. Detailed Chemical Analysis:
+   - Complete breakdown of chemical compounds
+   - Molecular interactions and potential reactions
+   - Known toxicological profiles
 
-Provide detailed, evidence-based analysis while maintaining accuracy above 97%.`
+2. Historical Safety Data:
+   - Documented adverse events and fatalities
+   - Class action lawsuits or recalls
+   - FDA warnings or regulatory actions
+
+3. Clinical Research:
+   - Peer-reviewed studies on ingredients
+   - Long-term exposure effects
+   - Population-specific risks
+
+4. Allergy Information:
+   - Common allergic reactions
+   - Cross-reactivity potential
+   - Severity of allergic responses
+
+5. Manufacturing Safety:
+   - Quality control measures
+   - Contamination risks
+   - Supply chain integrity
+
+6. Environmental Impact:
+   - Bioaccumulation potential
+   - Ecological toxicity
+   - Disposal concerns
+
+7. Special Populations:
+   - Risks for pregnant women
+   - Pediatric safety concerns
+   - Elderly population considerations
+
+8. Drug Interactions:
+   - Known contraindications
+   - Medication interference patterns
+   - Synergistic effects
+
+Maintain accuracy above 98% and flag any products with documented fatalities or severe health incidents.`
       }, {
         role: "user",
-        content: `Generate a comprehensive analysis for a ${randomCategory} product. Include:
-1. Product name
-2. Complete list of ingredients with their scientific background
-3. Detailed health impact assessment
-4. Evidence-based benefits and risks
-5. Category classification (healthy/restricted/harmful)
-6. Numerical health score (0-100)
-7. Thorough analysis summary
-8. Scientifically-backed pros and cons
+        content: `Generate a comprehensive safety analysis for a ${randomCategory} product. Include:
 
-Return as JSON with fields: name, ingredients (array), category, healthScore, analysisSummary, pros (array), cons (array).`
+1. Product name and chemical composition
+2. Complete toxicological profile
+3. Historical safety incidents (if any)
+4. Documented fatalities or severe adverse events
+5. Allergy risk assessment
+6. Drug interaction warnings
+7. Special population considerations
+8. Environmental impact
+9. Manufacturing safety analysis
+10. Regulatory compliance status
+
+Return as JSON with fields: 
+name, 
+ingredients (array with chemical details), 
+category (healthy/restricted/harmful), 
+healthScore (0-100), 
+hasFatalIncidents (boolean),
+hasSerousAdverseEvents (boolean),
+allergyRisks (array),
+drugInteractions (array),
+specialPopulationWarnings (array),
+environmentalImpact (string),
+analysisSummary (string),
+pros (array),
+cons (array),
+safetyIncidents (array of historical incidents)`
       }]
     })
 
     const productData = JSON.parse(completion.data.choices[0].message?.content ?? "{}")
 
-    // Insert into database
     const { data, error } = await supabaseClient
       .from('products')
       .insert([{
@@ -81,7 +124,14 @@ Return as JSON with fields: name, ingredients (array), category, healthScore, an
         health_score: productData.healthScore,
         analysis_summary: productData.analysisSummary,
         pros: productData.pros,
-        cons: productData.cons
+        cons: productData.cons,
+        has_fatal_incidents: productData.hasFatalIncidents,
+        has_serious_adverse_events: productData.hasSerousAdverseEvents,
+        allergy_risks: productData.allergyRisks,
+        drug_interactions: productData.drugInteractions,
+        special_population_warnings: productData.specialPopulationWarnings,
+        environmental_impact: productData.environmentalImpact,
+        safety_incidents: productData.safetyIncidents
       }])
 
     if (error) throw error
