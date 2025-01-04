@@ -16,7 +16,8 @@ const Navbar = () => {
     "Health Analysis",
     "Product Health",
     "Product Explorer",
-    "Roadmap"
+    "Roadmap",
+    "FAQ"
   ];
 
   return (

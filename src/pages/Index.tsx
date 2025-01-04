@@ -6,6 +6,7 @@ import { HealthAnalysis } from "@/components/HealthAnalysis";
 import ProductHealthAnalysis from "@/components/ProductHealthAnalysis";
 import ProductExplorer from "@/components/ProductExplorer";
 import { Roadmap } from "@/components/Roadmap";
+import { FAQ } from "@/components/FAQ";
 
 const Index = () => {
   return (
@@ -19,6 +20,7 @@ const Index = () => {
         <ProductHealthAnalysis />
         <ProductExplorer />
         <Roadmap />
+        <FAQ />
       </div>
     </div>
   );
