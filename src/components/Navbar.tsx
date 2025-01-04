@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Twitter, Telegram } from "lucide-react";
+import { Twitter, MessageCircle } from "lucide-react";
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
 
@@ -55,7 +55,7 @@ const Navbar = () => {
               className="hover:text-primary transition-colors"
               onClick={() => window.open("https://telegram.org", "_blank")}
             >
-              <Telegram className="h-5 w-5" />
+              <MessageCircle className="h-5 w-5" />
             </Button>
           </div>
         </div>
