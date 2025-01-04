@@ -61,6 +61,18 @@
   backdrop-filter: blur(10px);
 }
 
+.glow {
+  text-shadow: 0 0 20px rgba(255, 105, 180, 0.5);
+}
+
+.card-glow {
+  box-shadow: 0 0 20px rgba(255, 105, 180, 0.1);
+}
+
+.hero-gradient {
+  background: linear-gradient(135deg, rgba(123, 31, 162, 0.2) 0%, rgba(103, 58, 183, 0.2) 100%);
+}
+
 .glass-effect {
   background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(10px);
@@ -73,9 +85,21 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient 8s ease infinite;
+.cosmic-purple-gradient {
+  background: linear-gradient(180deg, #2D1B69 0%, #1A103F 100%);
+}
+
+.neon-border {
+  border: 1px solid rgba(255, 105, 180, 0.3);
+}
+
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.1);
 }
 
 @keyframes gradient {
@@ -84,9 +108,69 @@
   100% { background-position: 0% 50%; }
 }
 
-/* Enhanced Loading States */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 8s ease infinite;
+}
+
+/* Responsive Typography */
+@layer utilities {
+  .text-responsive {
+    @apply text-base md:text-lg lg:text-xl;
+  }
+  
+  .heading-responsive {
+    @apply text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
+  }
+  
+  .subheading-responsive {
+    @apply text-xl md:text-2xl lg:text-3xl;
+  }
+}
+
+/* Enhanced Card Styles */
+.enhanced-card {
+  @apply relative overflow-hidden rounded-xl p-6 transition-all duration-300;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.enhanced-card:hover {
+  @apply transform -translate-y-1;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px -5px rgba(139, 92, 246, 0.2);
+}
+
+/* Improved Button Styles */
+.button-glow {
+  @apply relative overflow-hidden transition-all duration-300;
+  background: linear-gradient(45deg, #8B5CF6, #D946EF);
+}
+
+.button-glow:hover {
+  @apply shadow-lg;
+  background: linear-gradient(45deg, #D946EF, #8B5CF6);
+}
+
+/* Enhanced Container Styles */
+.container-responsive {
+  @apply px-4 md:px-6 lg:px-8 mx-auto max-w-7xl;
+}
+
+/* Improved Section Spacing */
+.section-spacing {
+  @apply py-12 md:py-16 lg:py-20;
+}
+
+/* Better Mobile Navigation */
+.mobile-menu {
+  @apply fixed inset-0 z-50 transform transition-transform duration-300;
+}
+
+/* Loading States */
 .loading-skeleton {
-  @apply animate-pulse bg-purple-500/20 rounded;
+  @apply animate-pulse bg-gray-700/30 rounded;
 }
 
 /* Improved Focus States */
@@ -101,41 +185,8 @@
          transition-all duration-300;
 }
 
-/* Responsive Typography */
-.text-responsive {
-  @apply text-base md:text-lg lg:text-xl;
-}
-
-.heading-responsive {
-  @apply text-3xl md:text-4xl lg:text-5xl xl:text-6xl;
-}
-
-.subheading-responsive {
-  @apply text-xl md:text-2xl lg:text-3xl;
-}
-
-/* Enhanced Card Styles */
-.enhanced-card {
-  @apply relative overflow-hidden rounded-xl p-6 transition-all duration-300
-         hover:translate-y-[-2px] hover:shadow-lg;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* Improved Button Styles */
-.button-glow {
-  @apply relative overflow-hidden transition-all duration-300
-         hover:shadow-lg hover:scale-105;
-  background: linear-gradient(45deg, #8B5CF6, #D946EF);
-}
-
-/* Container Styles */
-.container-responsive {
-  @apply px-4 md:px-6 lg:px-8 mx-auto max-w-7xl;
-}
-
-/* Section Spacing */
-.section-spacing {
-  @apply py-12 md:py-16 lg:py-20;
+/* Optimized Images */
+.image-optimized {
+  @apply object-cover w-full h-full;
+  loading: lazy;
 }
