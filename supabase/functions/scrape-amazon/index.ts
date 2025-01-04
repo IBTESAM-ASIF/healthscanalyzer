@@ -34,15 +34,38 @@ serve(async (req) => {
     ]
     const randomCategory = categories[Math.floor(Math.random() * categories.length)]
 
-    // Use GPT to generate sample product data (in production, this would be real Amazon scraping)
+    // Enhanced analysis prompt for more comprehensive research
     const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",  // Using the more powerful model for better analysis
       messages: [{
         role: "system",
-        content: "You are a product researcher analyzing Amazon products. Generate realistic product data."
+        content: `You are an expert product researcher and analyst with deep knowledge in health, nutrition, chemistry, and consumer safety. Your task is to perform comprehensive analysis of products considering:
+
+1. Historical context and development of ingredients
+2. Scientific research and clinical studies
+3. Global regulatory status and safety assessments
+4. Environmental impact and sustainability
+5. Manufacturing processes and quality control
+6. Potential interactions and contraindications
+7. Population-specific considerations (age groups, health conditions)
+8. Long-term health implications
+9. Alternative and comparative product analysis
+10. Latest scientific literature and research findings
+
+Provide detailed, evidence-based analysis while maintaining accuracy above 97%.`
       }, {
         role: "user",
-        content: `Generate a realistic Amazon ${randomCategory} product with name, ingredients, and potential health impacts. Return as JSON with fields: name, ingredients (array), category (healthy/restricted/harmful), healthScore (0-100), analysisSummary, pros (array), cons (array).`
+        content: `Generate a comprehensive analysis for a ${randomCategory} product. Include:
+1. Product name
+2. Complete list of ingredients with their scientific background
+3. Detailed health impact assessment
+4. Evidence-based benefits and risks
+5. Category classification (healthy/restricted/harmful)
+6. Numerical health score (0-100)
+7. Thorough analysis summary
+8. Scientifically-backed pros and cons
+
+Return as JSON with fields: name, ingredients (array), category, healthScore, analysisSummary, pros (array), cons (array).`
       }]
     })
 

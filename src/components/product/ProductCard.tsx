@@ -110,12 +110,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </div>
 
         {product.analysis_summary && (
-          <div className="space-y-1">
-            <h4 className="text-sm font-medium text-primary">World's Best Analytics</h4>
-            <p className="text-sm text-muted-foreground">
-              {product.analysis_summary}
-            </p>
-          </div>
+          <p className="text-sm text-muted-foreground">
+            {product.analysis_summary}
+          </p>
         )}
 
         <div>
