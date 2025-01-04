@@ -55,18 +55,18 @@ export const Features = () => {
   };
 
   return (
-    <section className="py-24 relative overflow-hidden">
+    <section className="py-12 relative overflow-hidden">
       {/* Enhanced Background Effects */}
       <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_85%)] -z-10" />
       <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background to-background/80 -z-10" />
       <div className="absolute inset-0 bg-gradient-cosmic opacity-30 -z-10" />
 
-      <div className="container px-4 md:px-6">
+      <div className="container px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col items-center justify-center space-y-4 text-center mb-16"
+          className="flex flex-col items-center justify-center space-y-4 text-center mb-8"
         >
           <span className="inline-flex items-center px-3 py-1 rounded-full bg-purple-500/10 text-purple-400 text-sm font-medium tracking-wider uppercase">
             Features & Benefits
@@ -87,7 +87,7 @@ export const Features = () => {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12"
+          className="grid grid-cols-1 md:grid-cols-3 gap-6"
         >
           {features.map((feature, index) => {
             const Icon = feature.icon;

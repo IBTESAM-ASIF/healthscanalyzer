@@ -58,7 +58,7 @@ export const Hero = () => {
   ];
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center py-8">
+    <section className="min-h-[90vh] flex items-center justify-center py-4">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 via-violet-500/5 to-background/90" />

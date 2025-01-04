@@ -80,7 +80,7 @@ const ProductHealthAnalysis = () => {
   }, []);
 
   return (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-12 relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] opacity-10"></div>
       <div className="absolute inset-0 bg-gradient-cosmic"></div>

@@ -33,7 +33,7 @@ export const Mission = () => {
   ];
 
   return (
-    <section className="relative py-32 overflow-hidden">
+    <section className="py-16 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_85%)]" />
       <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background to-background/80" />

@@ -3,7 +3,7 @@ import { WaitlistForm } from "./WaitlistForm";
 
 export const JoinEcosystem = () => {
   return (
-    <section className="py-16 px-4 bg-gradient-to-b from-background/95 to-background/90 relative overflow-hidden">
+    <section className="py-12 px-4 bg-gradient-to-b from-background/95 to-background/90 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
         <div className="absolute inset-0 bg-gradient-cosmic opacity-30" />

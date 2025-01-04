@@ -54,7 +54,7 @@ export const Roadmap = () => {
   ];
 
   return (
-    <section id="roadmap" className="py-32 relative overflow-hidden">
+    <section id="roadmap" className="py-16 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
         <div className="absolute inset-0 cosmic-purple-gradient opacity-40" />
