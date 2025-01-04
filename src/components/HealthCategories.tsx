@@ -20,20 +20,20 @@ const categories = [
 
 export const HealthCategories = () => {
   return (
-    <section className="py-24">
+    <section className="py-24 bg-secondary/10">
       <div className="container px-4 md:px-6">
-        <h2 className="text-3xl font-bold tracking-tighter text-center mb-12">Health Categories</h2>
+        <h2 className="text-3xl font-bold tracking-tighter text-center mb-12 text-gradient glow">Health Categories</h2>
         <div className="grid gap-8 md:grid-cols-3">
           {categories.map((category) => (
-            <Card key={category.title} className="relative group hover:shadow-lg transition-all">
+            <Card key={category.title} className="card-gradient border border-primary/20 relative group hover:shadow-lg transition-all card-glow">
               <div className={`absolute inset-x-0 h-1 top-0 bg-${category.color} rounded-t-lg`} />
               <CardHeader>
-                <CardTitle>{category.title}</CardTitle>
-                <CardDescription>{category.description}</CardDescription>
+                <CardTitle className="text-gradient">{category.title}</CardTitle>
+                <CardDescription className="text-purple-200/70">{category.description}</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="h-32 rounded-lg bg-muted/50 flex items-center justify-center">
-                  <span className="text-2xl font-bold text-muted-foreground">Coming Soon</span>
+                <div className="h-32 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">
+                  <span className="text-2xl font-bold text-purple-300/50">Coming Soon</span>
                 </div>
               </CardContent>
             </Card>
