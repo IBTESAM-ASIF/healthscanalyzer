@@ -19,9 +19,9 @@ const Navbar = () => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
-      const navbarHeight = 80; // Height of the navbar
+      const offset = 80; // Height of the navbar plus some padding
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - navbarHeight;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
 
       window.scrollTo({
         top: offsetPosition,
@@ -31,13 +31,12 @@ const Navbar = () => {
   };
 
   const sections = [
-    { id: "hero", label: "Home" },
+    { id: "home", label: "Home" },
+    { id: "statistics", label: "Statistics" },
     { id: "features", label: "Features" },
     { id: "health-analysis", label: "Health Analysis" },
     { id: "product-health", label: "Product Health" },
     { id: "product-explorer", label: "Product Explorer" },
-    { id: "statistics", label: "Statistics" },
-    { id: "mission", label: "Mission" },
     { id: "roadmap", label: "Roadmap" },
     { id: "faq", label: "FAQ" }
   ];
@@ -68,9 +67,9 @@ const Navbar = () => {
   return (
     <nav 
       className={cn(
-        "nav-sticky transition-all duration-300",
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
         isScrolled 
-          ? "nav-glass border-b border-border/40 shadow-lg"
+          ? "backdrop-blur-md bg-background/80 border-b border-border/40 shadow-lg"
           : "bg-transparent"
       )}
     >
@@ -80,7 +79,7 @@ const Navbar = () => {
           <div className="flex-shrink-0">
             <h1 
               className="text-xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600 cursor-pointer"
-              onClick={() => scrollToSection('hero')}
+              onClick={() => scrollToSection('home')}
             >
               HealthScanalyzer
             </h1>
