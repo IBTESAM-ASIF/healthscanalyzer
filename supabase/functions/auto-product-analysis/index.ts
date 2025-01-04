@@ -68,21 +68,6 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Check if we should generate new products (limit to 50 products total)
-    const { count } = await supabaseClient
-      .from('products')
-      .select('*', { count: 'exact', head: true });
-
-    if (count && count >= 50) {
-      console.log('Product limit reached, removing oldest products...');
-      // Remove oldest products to make room for new ones
-      await supabaseClient
-        .from('products')
-        .delete()
-        .order('created_at', { ascending: true })
-        .limit(limit);
-    }
-
     const productIdeas = await generateProductIdeas(openai, limit);
     console.log(`Generated ${productIdeas.length} product ideas`);
 
