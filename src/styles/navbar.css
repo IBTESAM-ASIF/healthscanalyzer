@@ -1,0 +1,27 @@
+/* Navbar specific styles */
+.nav-sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+/* Enhanced glass effect for navbar */
+.nav-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Smooth scroll behavior for the whole page */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .nav-mobile {
+    padding: 0.5rem 1rem;
+  }
+}
