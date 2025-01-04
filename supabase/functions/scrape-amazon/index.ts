@@ -9,9 +9,10 @@ const corsHeaders = {
 };
 
 async function fetchProductDetails(url: string) {
-  console.log('Fetching product details from:', url);
+  console.log('Starting fetchProductDetails for URL:', url);
   
   try {
+    console.log('Initiating fetch request to Amazon');
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -19,70 +20,92 @@ async function fetchProductDetails(url: string) {
     });
 
     if (!response.ok) {
+      console.error(`HTTP error! status: ${response.status}`);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
     const html = await response.text();
+    console.log('Successfully fetched HTML content, length:', html.length);
+    
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, 'text/html');
 
     if (!doc) {
+      console.error('Failed to parse HTML document');
       throw new Error('Failed to parse HTML');
     }
 
     // Extract product name
     const productName = doc.querySelector('#productTitle')?.textContent?.trim() ||
                        doc.querySelector('.product-title')?.textContent?.trim();
+    console.log('Extracted product name:', productName);
 
     // Extract product description
     const description = doc.querySelector('#productDescription')?.textContent?.trim() ||
                        doc.querySelector('.product-description')?.textContent?.trim();
+    console.log('Extracted description length:', description?.length);
 
-    // Extract ingredients (if available)
+    // Extract ingredients
     const ingredientsSection = doc.querySelector('#important-information')?.textContent || '';
     const ingredients = ingredientsSection.match(/ingredients?:([^.]*)/i)?.[1]?.split(',').map(i => i.trim()) || [];
+    console.log('Extracted ingredients count:', ingredients.length);
 
-    return {
+    const result = {
       name: productName || 'Unknown Product',
       description: description || '',
       ingredients: ingredients,
       url: url
     };
+
+    console.log('Product details extraction completed:', JSON.stringify(result, null, 2));
+    return result;
+
   } catch (error) {
-    console.error('Error fetching product details:', error);
+    console.error('Error in fetchProductDetails:', error);
     throw new Error(`Failed to fetch product details: ${error.message}`);
   }
 }
 
 serve(async (req) => {
+  console.log('Received request:', req.method);
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    console.log('Handling CORS preflight request');
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { url } = await req.json();
-    console.log('Received request to analyze URL:', url);
+    console.log('Processing URL:', url);
 
     if (!url || !url.includes('amazon.com')) {
+      console.error('Invalid URL provided:', url);
       throw new Error('Invalid or missing Amazon URL');
     }
 
     // Initialize OpenAI
+    const openAiKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAiKey) {
+      console.error('OpenAI API key not found');
+      throw new Error('OpenAI API key not configured');
+    }
+
     const configuration = new Configuration({
-      apiKey: Deno.env.get('OPENAI_API_KEY'),
+      apiKey: openAiKey,
     });
     const openai = new OpenAIApi(configuration);
+    console.log('OpenAI client initialized');
 
     // Fetch product details
     console.log('Fetching product details...');
     const productDetails = await fetchProductDetails(url);
-    console.log('Product details fetched:', productDetails);
+    console.log('Product details fetched successfully');
 
     // Analyze the product using GPT-4
-    console.log('Analyzing product with GPT-4...');
+    console.log('Starting GPT-4 analysis...');
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       temperature: 0.5,
       messages: [
         {
@@ -106,7 +129,7 @@ serve(async (req) => {
     });
 
     const analysis = completion.data.choices[0].message?.content;
-    console.log('GPT-4 analysis completed');
+    console.log('GPT-4 analysis completed:', analysis);
 
     // Parse the analysis
     const healthScore = parseInt(analysis?.match(/health score:?\s*(\d+)/i)?.[1] || '0');
@@ -121,13 +144,22 @@ serve(async (req) => {
       .map(c => c.trim())
       .filter(c => c.length > 0) || [];
 
+    console.log('Parsed analysis results:', {
+      healthScore,
+      category,
+      prosCount: pros.length,
+      consCount: cons.length
+    });
+
     // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
+    console.log('Supabase client initialized');
 
     // Store the analysis in the database
+    console.log('Storing analysis in database...');
     const { data, error } = await supabaseClient
       .from('products')
       .insert([{
@@ -153,7 +185,7 @@ serve(async (req) => {
       throw error;
     }
 
-    console.log('Analysis stored successfully');
+    console.log('Analysis stored successfully:', data);
 
     return new Response(
       JSON.stringify({ 
