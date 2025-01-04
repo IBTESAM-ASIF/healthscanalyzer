@@ -5,6 +5,7 @@ import { Mission } from "@/components/Mission";
 import Navbar from "@/components/Navbar";
 import Statistics from "@/components/Statistics";
 import { HealthAnalysis } from "@/components/HealthAnalysis";
+import { ProductHealthAnalysis } from "@/components/ProductHealthAnalysis";
 
 const Index = () => {
   return (
@@ -15,6 +16,7 @@ const Index = () => {
         <Statistics />
         <Features />
         <HealthAnalysis />
+        <ProductHealthAnalysis />
         <HealthCategories />
         <Mission />
       </div>
