@@ -1,7 +1,5 @@
 import { Hero } from "@/components/Hero";
 import { Features } from "@/components/Features";
-import { HealthCategories } from "@/components/HealthCategories";
-import { Mission } from "@/components/Mission";
 import Navbar from "@/components/Navbar";
 import Statistics from "@/components/Statistics";
 import { HealthAnalysis } from "@/components/HealthAnalysis";
@@ -19,8 +17,6 @@ const Index = () => {
         <HealthAnalysis />
         <ProductHealthAnalysis />
         <ProductExplorer />
-        <HealthCategories />
-        <Mission />
       </div>
     </div>
   );
