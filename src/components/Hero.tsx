@@ -59,7 +59,7 @@ export const Hero = () => {
           <div className="space-y-6 max-w-4xl">
             <h1 className="text-7xl md:text-8xl font-bold tracking-tighter glow animate-fade-in">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-purple-500 animate-gradient">
-                Health Harmony
+                HEALTH SCANALYZER
               </span>
             </h1>
             <div className="flex items-center justify-center gap-4 text-2xl md:text-3xl text-purple-300/90 font-light">
