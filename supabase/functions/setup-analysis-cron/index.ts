@@ -18,15 +18,23 @@ serve(async (req) => {
     );
 
     // Create cron job to run every 10 minutes
-    const { data, error } = await supabaseClient.rpc('setup_product_analysis_cron');
+    const { data, error } = await supabaseClient.rpc('setup_product_analysis_cron', {
+      schedule: '*/10 * * * *',
+      function_url: `${Deno.env.get('SUPABASE_URL')}/functions/v1/auto-product-analysis`,
+      auth_header: `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
+      body: JSON.stringify({ limit: 5 })
+    });
 
     if (error) throw error;
+
+    console.log('Successfully set up cron job for product analysis');
 
     return new Response(
       JSON.stringify({ success: true, data }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
+    console.error('Error setting up cron job:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }

@@ -16,7 +16,8 @@ export const useStats = () => {
       setIsLoading(true);
       const { data: products, error } = await supabase
         .from('products')
-        .select('category, health_score');
+        .select('category, health_score')
+        .order('created_at', { ascending: false });
       
       if (error) throw error;
 
@@ -69,7 +70,7 @@ export const useStats = () => {
       fetchStats();
       toast({
         title: "Statistics Updated",
-        description: "The statistics have been updated with new data.",
+        description: "New product analysis data is available.",
       });
     }, 1000);
 
@@ -90,7 +91,7 @@ export const useStats = () => {
       debouncedFetchStats.cancel();
       supabase.removeChannel(channel);
     };
-  }, [toast]);
+  }, []);
 
   return { stats, isLoading };
 };
