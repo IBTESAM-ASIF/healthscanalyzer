@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       products: {
         Row: {
+          allergy_risks: string[] | null
           amazon_url: string | null
           analysis_date: string | null
           analysis_summary: string | null
@@ -19,13 +20,20 @@ export type Database = {
             | null
           cons: string[] | null
           created_at: string | null
+          drug_interactions: string[] | null
+          environmental_impact: string | null
+          has_fatal_incidents: boolean | null
+          has_serious_adverse_events: boolean | null
           health_score: number | null
           id: string
           ingredients: string[] | null
           name: string
           pros: string[] | null
+          safety_incidents: string[] | null
+          special_population_warnings: string[] | null
         }
         Insert: {
+          allergy_risks?: string[] | null
           amazon_url?: string | null
           analysis_date?: string | null
           analysis_summary?: string | null
@@ -34,13 +42,20 @@ export type Database = {
             | null
           cons?: string[] | null
           created_at?: string | null
+          drug_interactions?: string[] | null
+          environmental_impact?: string | null
+          has_fatal_incidents?: boolean | null
+          has_serious_adverse_events?: boolean | null
           health_score?: number | null
           id?: string
           ingredients?: string[] | null
           name: string
           pros?: string[] | null
+          safety_incidents?: string[] | null
+          special_population_warnings?: string[] | null
         }
         Update: {
+          allergy_risks?: string[] | null
           amazon_url?: string | null
           analysis_date?: string | null
           analysis_summary?: string | null
@@ -49,11 +64,17 @@ export type Database = {
             | null
           cons?: string[] | null
           created_at?: string | null
+          drug_interactions?: string[] | null
+          environmental_impact?: string | null
+          has_fatal_incidents?: boolean | null
+          has_serious_adverse_events?: boolean | null
           health_score?: number | null
           id?: string
           ingredients?: string[] | null
           name?: string
           pros?: string[] | null
+          safety_incidents?: string[] | null
+          special_population_warnings?: string[] | null
         }
         Relationships: []
       }
