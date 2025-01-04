@@ -4,6 +4,7 @@ import { HealthCategories } from "@/components/HealthCategories";
 import { Mission } from "@/components/Mission";
 import Navbar from "@/components/Navbar";
 import Statistics from "@/components/Statistics";
+import { HealthAnalysis } from "@/components/HealthAnalysis";
 
 const Index = () => {
   return (
@@ -12,6 +13,7 @@ const Index = () => {
       <div className="pt-16">
         <Hero />
         <Statistics />
+        <HealthAnalysis />
         <Features />
         <HealthCategories />
         <Mission />
