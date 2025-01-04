@@ -14,7 +14,7 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
         model: "gpt-4o-mini",
         messages: [{
           role: "system",
-          content: "You are a product safety expert. Analyze this product and return ONLY a JSON object containing: healthScore (0-100), category (healthy/restricted/harmful), summary, pros, cons, allergyRisks, drugInteractions, populationWarnings, environmentalImpact, safetyIncidents"
+          content: "You are a product safety expert. Analyze this product and return ONLY a valid JSON object with these exact fields: healthScore (number 0-100), category (string: healthy/restricted/harmful), summary (string), pros (string array), cons (string array), allergyRisks (string array), drugInteractions (string array), populationWarnings (string array), environmentalImpact (string), safetyIncidents (string array). No markdown formatting or explanation."
         }, {
           role: "user",
           content: `Analyze this product: ${JSON.stringify(product)}`
@@ -33,9 +33,8 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
       throw new Error('No content received from OpenAI');
     }
 
-    // Clean the response to ensure valid JSON
-    const cleanedContent = content.replace(/```json\n|\n```/g, '').trim();
-    const analysis = JSON.parse(cleanedContent);
+    // Parse the content directly since we explicitly asked for clean JSON
+    const analysis = JSON.parse(content);
     
     console.log(`[${new Date().toISOString()}] Completed deep analysis for: ${product.name}`);
     return analysis;

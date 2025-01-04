@@ -14,7 +14,7 @@ export async function searchProducts(openAIApiKey: string) {
         model: "gpt-4o-mini",
         messages: [{
           role: "system",
-          content: "You are a product research expert. Search for 2 unique consumer products that need health analysis. Include both common items and specialized products. Return ONLY a JSON array with objects containing: name, description, category (healthy/restricted/harmful), known_ingredients, amazon_url, potential_risks, initial_safety_concerns"
+          content: "You are a product research expert. Generate 2 unique consumer products that need health analysis. Return ONLY a valid JSON array of objects with these exact fields: name (string), description (string), category (string: healthy/restricted/harmful), known_ingredients (string array), amazon_url (string), potential_risks (string array), initial_safety_concerns (string array). No markdown formatting or explanation."
         }]
       })
     });
@@ -30,9 +30,8 @@ export async function searchProducts(openAIApiKey: string) {
       throw new Error('No content received from OpenAI');
     }
 
-    // Clean the response to ensure valid JSON
-    const cleanedContent = content.replace(/```json\n|\n```/g, '').trim();
-    const products = JSON.parse(cleanedContent);
+    // Parse the content directly since we explicitly asked for clean JSON
+    const products = JSON.parse(content);
     
     console.log(`[${new Date().toISOString()}] Found ${products.length} products to analyze`);
     return products;
