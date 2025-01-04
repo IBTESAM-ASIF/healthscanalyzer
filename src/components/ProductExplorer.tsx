@@ -1,98 +1,25 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Sparkles, ShieldAlert, AlertTriangle } from 'lucide-react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from './product/ProductCard';
 import { ProductList } from './product/ProductList';
 import { SearchBar } from './product/SearchBar';
 import { CategoryTabs } from './product/CategoryTabs';
+import { Pagination } from './product/Pagination';
 import { motion } from 'framer-motion';
-
-// Sample placeholder data
-const placeholderProducts = {
-  healthy: [
-    {
-      id: 'h1',
-      name: 'Organic Green Tea',
-      health_score: 95,
-      ingredients: ['Green Tea Leaves', 'Natural Antioxidants'],
-      pros: ['Rich in antioxidants', 'Boosts metabolism', 'Natural energy'],
-      cons: ['Contains caffeine'],
-      category: 'healthy',
-      amazon_url: 'https://amazon.com',
-      analysis_summary: 'A highly beneficial beverage with numerous health benefits.'
-    },
-    {
-      id: 'h2',
-      name: 'Quinoa Bowl',
-      health_score: 90,
-      ingredients: ['Quinoa', 'Vegetables', 'Olive Oil'],
-      pros: ['High protein', 'Rich in fiber', 'Complete protein'],
-      cons: ['May contain traces of saponin'],
-      category: 'healthy',
-      amazon_url: 'https://amazon.com',
-      analysis_summary: 'Nutrient-dense superfood great for daily consumption.'
-    }
-  ],
-  restricted: [
-    {
-      id: 'r1',
-      name: 'Dark Chocolate Bar',
-      health_score: 65,
-      ingredients: ['Cocoa Mass', 'Sugar', 'Cocoa Butter'],
-      pros: ['Contains antioxidants', 'May improve mood'],
-      cons: ['High in calories', 'Contains sugar'],
-      category: 'restricted',
-      amazon_url: 'https://amazon.com',
-      analysis_summary: 'Moderate consumption recommended due to sugar content.'
-    },
-    {
-      id: 'r2',
-      name: 'Greek Yogurt',
-      health_score: 70,
-      ingredients: ['Milk', 'Live Cultures'],
-      pros: ['High protein', 'Probiotics'],
-      cons: ['Contains lactose', 'High in saturated fat'],
-      category: 'restricted',
-      amazon_url: 'https://amazon.com',
-      analysis_summary: 'Good in moderation, especially for those without lactose intolerance.'
-    }
-  ],
-  harmful: [
-    {
-      id: 'ha1',
-      name: 'Processed Energy Drink',
-      health_score: 20,
-      ingredients: ['Caffeine', 'Sugar', 'Artificial Colors'],
-      pros: ['Quick energy boost'],
-      cons: ['High sugar content', 'Artificial additives', 'May cause jitters'],
-      category: 'harmful',
-      amazon_url: 'https://amazon.com',
-      analysis_summary: 'High in artificial ingredients and sugar, not recommended for regular consumption.'
-    },
-    {
-      id: 'ha2',
-      name: 'Ultra-Processed Snack',
-      health_score: 15,
-      ingredients: ['Refined Flour', 'Artificial Flavors', 'Preservatives'],
-      pros: ['Convenient'],
-      cons: ['No nutritional value', 'Contains harmful additives', 'High in sodium'],
-      category: 'harmful',
-      amazon_url: 'https://amazon.com',
-      analysis_summary: 'Contains multiple harmful ingredients, best avoided.'
-    }
-  ]
-};
+import { ITEMS_PER_PAGE, getPaginatedData, getTotalPages } from '@/utils/pagination';
+import { placeholderProducts } from './product/placeholderData';
 
 const ProductExplorer = () => {
   const [activeCategory, setActiveCategory] = useState('healthy');
   const [searchQuery, setSearchQuery] = useState('');
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
     fetchProducts();
+    setCurrentPage(1); // Reset to first page when category or search changes
 
     const channel = supabase
       .channel('schema-db-changes')
@@ -119,7 +46,7 @@ const ProductExplorer = () => {
       setLoading(true);
       let query = supabase
         .from('products')
-        .select('*')
+        .select('*', { count: 'exact' })
         .order('created_at', { ascending: false });
 
       if (searchQuery) {
@@ -128,14 +55,15 @@ const ProductExplorer = () => {
         query = query.eq('category', activeCategory);
       }
 
-      const { data, error } = await query;
+      // Add pagination to the query
+      query = query.range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
+
+      const { data, error, count } = await query;
       
       if (error) throw error;
       
-      // If no data from database, use placeholder data
       if (!data || data.length === 0) {
         if (searchQuery) {
-          // When searching, combine all placeholder products and filter by search query
           const allPlaceholders = [
             ...placeholderProducts.healthy,
             ...placeholderProducts.restricted,
@@ -144,19 +72,27 @@ const ProductExplorer = () => {
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             product.ingredients.some(ing => ing.toLowerCase().includes(searchQuery.toLowerCase()))
           );
-          setProducts(allPlaceholders);
+          setProducts(getPaginatedData(allPlaceholders, currentPage));
+          setTotalItems(allPlaceholders.length);
         } else {
-          // When no search query, show placeholders for active category
-          setProducts(placeholderProducts[activeCategory] || []);
+          const categoryProducts = placeholderProducts[activeCategory] || [];
+          setProducts(getPaginatedData(categoryProducts, currentPage));
+          setTotalItems(categoryProducts.length);
         }
       } else {
         setProducts(data);
+        setTotalItems(count || 0);
       }
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -200,6 +136,11 @@ const ProductExplorer = () => {
         <SearchBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <CategoryTabs activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
         <ProductList products={products} loading={loading} />
+        <Pagination 
+          currentPage={currentPage}
+          totalPages={getTotalPages(totalItems)}
+          onPageChange={handlePageChange}
+        />
       </motion.div>
     </section>
   );
