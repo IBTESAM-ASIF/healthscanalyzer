@@ -108,11 +108,22 @@ const Statistics = () => {
         
         if (error) throw error;
 
+        // Handle empty state
+        if (!products || products.length === 0) {
+          toast({
+            title: "No Data Available",
+            description: "Waiting for product analysis data...",
+          });
+          return;
+        }
+
         const totalAnalyzed = products.length;
         const healthyProducts = products.filter(p => p.category === 'healthy').length;
         const harmfulProducts = products.filter(p => p.category === 'harmful').length;
         const moderateRisk = products.filter(p => p.category === 'restricted').length;
-        const avgHealthScore = products.reduce((acc, curr) => acc + (curr.health_score || 0), 0) / totalAnalyzed;
+        const avgHealthScore = products.length > 0 
+          ? products.reduce((acc, curr) => acc + (curr.health_score || 0), 0) / totalAnalyzed 
+          : 0;
 
         setStats(prev => prev.map(stat => {
           switch(stat.title) {
@@ -142,7 +153,7 @@ const Statistics = () => {
 
     fetchStats();
 
-    // Subscribe to real-time updates
+    // Subscribe to real-time updates with debouncing
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -152,13 +163,13 @@ const Statistics = () => {
           schema: 'public',
           table: 'products'
         },
-        () => {
+        _.debounce(() => {
           fetchStats();
           toast({
             title: "Statistics Updated",
             description: "The statistics have been updated with new data.",
           });
-        }
+        }, 1000) // Debounce updates to prevent too frequent refreshes
       )
       .subscribe();
 

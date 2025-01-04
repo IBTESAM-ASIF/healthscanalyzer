@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from './product/ProductCard';
 import { ProductList } from './product/ProductList';
@@ -8,6 +8,8 @@ import { Pagination } from './product/Pagination';
 import { motion } from 'framer-motion';
 import { ITEMS_PER_PAGE, getPaginatedData, getTotalPages } from '@/utils/pagination';
 import { placeholderProducts } from './product/placeholderData';
+import { useToast } from './ui/use-toast';
+import _ from 'lodash';
 
 const ProductExplorer = () => {
   const [activeCategory, setActiveCategory] = useState('healthy');
@@ -16,32 +18,9 @@ const ProductExplorer = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const { toast } = useToast();
 
-  useEffect(() => {
-    fetchProducts();
-    setCurrentPage(1); // Reset to first page when category or search changes
-
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products'
-        },
-        () => {
-          fetchProducts();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [activeCategory, searchQuery]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
       let query = supabase
@@ -55,7 +34,6 @@ const ProductExplorer = () => {
         query = query.eq('category', activeCategory);
       }
 
-      // Add pagination to the query
       query = query.range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
 
       const { data, error, count } = await query;
@@ -85,10 +63,44 @@ const ProductExplorer = () => {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch products. Please try again later.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [activeCategory, searchQuery, currentPage]);
+
+  useEffect(() => {
+    fetchProducts();
+    setCurrentPage(1);
+
+    // Debounced real-time updates
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        _.debounce(() => {
+          fetchProducts();
+          toast({
+            title: "Products Updated",
+            description: "New product analysis data available.",
+          });
+        }, 1000)
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeCategory, searchQuery]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

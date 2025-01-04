@@ -14,7 +14,7 @@ async function generateProductIdeas(openai: OpenAIApi) {
     messages: [
       {
         role: "system",
-        content: "Generate 5 unique consumer products that would benefit from health analysis. Include both common and specialized products. Format as JSON array."
+        content: "Generate 3 unique consumer products that would benefit from health analysis. Include both common and specialized products. Format as JSON array."
       }
     ]
   });
@@ -53,18 +53,31 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting automatic product analysis...');
+    
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAiKey) throw new Error('OpenAI API key not configured');
 
     const configuration = new Configuration({ apiKey: openAiKey });
     const openai = new OpenAIApi(configuration);
-    console.log('OpenAI client initialized');
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
-    console.log('Supabase client initialized');
+
+    // Check if we should generate new products (limit to 50 products total)
+    const { count } = await supabaseClient
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+
+    if (count && count >= 50) {
+      console.log('Product limit reached, skipping generation');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Product limit reached' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     const productIdeas = await generateProductIdeas(openai);
     console.log(`Generated ${productIdeas.length} product ideas`);
