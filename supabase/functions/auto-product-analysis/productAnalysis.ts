@@ -1,13 +1,21 @@
 import { corsHeaders } from './cors.ts';
 
-const calculateTokenCost = (tokens: number, isInput: boolean) => {
-  const inputRate = 0.150 / 1000000; // $0.150 per 1M tokens
-  const outputRate = 0.600 / 1000000; // $0.600 per 1M tokens
-  return tokens * (isInput ? inputRate : outputRate);
+// Token counting helper (approximation based on GPT tokenization rules)
+const countTokens = (text: string): number => {
+  // GPT models process text as tokens, which can be words or parts of words
+  // This is a simplified approximation - about 4 characters per token
+  return Math.ceil(text.length / 4);
 };
 
-// Rough estimate of tokens based on string length
-const estimateTokens = (text: string) => Math.ceil(text.length / 4);
+// Calculate costs based on current OpenAI pricing for GPT-4o-mini
+const calculateTokenCost = (tokens: number, isInput: boolean) => {
+  // GPT-4o-mini pricing:
+  // Input tokens: $0.00025 / 1K tokens
+  // Output tokens: $0.00075 / 1K tokens
+  const inputRate = 0.00025 / 1000; // $0.00025 per 1K tokens
+  const outputRate = 0.00075 / 1000; // $0.00075 per 1K tokens
+  return tokens * (isInput ? inputRate : outputRate);
+};
 
 export async function analyzeProduct(openAIApiKey: string, product: any) {
   console.log(`[${new Date().toISOString()}] Starting deep analysis for: ${product.name}`);
@@ -17,7 +25,7 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
     const userPrompt = `Analyze this product: ${JSON.stringify(product)}`;
     
     // Calculate input tokens and cost
-    const inputTokens = estimateTokens(systemPrompt + userPrompt);
+    const inputTokens = countTokens(systemPrompt + userPrompt);
     const inputCost = calculateTokenCost(inputTokens, true);
     
     console.log(`[${new Date().toISOString()}] Analysis input cost estimate: $${inputCost.toFixed(6)} (${inputTokens} tokens)`);
@@ -36,7 +44,8 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
         }, {
           role: "user",
           content: userPrompt
-        }]
+        }],
+        max_tokens: 2000
       })
     });
 
@@ -52,14 +61,16 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
     }
 
     // Calculate output tokens and cost
-    const outputTokens = estimateTokens(content);
+    const outputTokens = countTokens(content);
     const outputCost = calculateTokenCost(outputTokens, false);
+    const totalCost = inputCost + outputCost;
     
     console.log(`[${new Date().toISOString()}] Analysis output cost estimate: $${outputCost.toFixed(6)} (${outputTokens} tokens)`);
-    console.log(`[${new Date().toISOString()}] Total analysis cost estimate: $${(inputCost + outputCost).toFixed(6)}`);
+    console.log(`[${new Date().toISOString()}] Total analysis cost: $${totalCost.toFixed(6)}`);
 
-    // Parse the content directly since we explicitly asked for clean JSON
+    // Parse the content and add the cost information
     const analysis = JSON.parse(content);
+    analysis.analysis_cost = totalCost;
     
     console.log(`[${new Date().toISOString()}] Completed deep analysis for: ${product.name}`);
     return analysis;
