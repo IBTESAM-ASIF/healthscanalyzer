@@ -9,6 +9,7 @@ import { StatCard } from './stats/StatCard';
 import { StatsHeader } from './stats/StatsHeader';
 import { StatsGrid } from './stats/StatsGrid';
 import { useToast } from './ui/use-toast';
+import _ from 'lodash';
 
 const Statistics = () => {
   const [stats, setStats] = useState([
