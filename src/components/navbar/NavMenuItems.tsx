@@ -4,9 +4,9 @@ import { useToast } from "@/hooks/use-toast";
 
 export const sections = [
   { id: "hero", label: "Home" },
-  { id: "statistics", label: "Statistics" },
   { id: "features", label: "Features" },
   { id: "health-analysis", label: "Health Analysis" },
+  { id: "product-analysis", label: "Analysis" },
   { id: "product-explorer", label: "Products" },
   { id: "roadmap", label: "Roadmap" },
   { id: "faq", label: "FAQ" },

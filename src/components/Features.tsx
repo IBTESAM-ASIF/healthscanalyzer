@@ -55,7 +55,7 @@ export const Features = () => {
   };
 
   return (
-    <section className="py-12 relative overflow-hidden">
+    <section id="features" className="py-12 relative overflow-hidden">
       {/* Enhanced Background Effects */}
       <div className="absolute inset-0 bg-grid-white/10 [mask-image:radial-gradient(white,transparent_85%)] -z-10" />
       <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background to-background/80 -z-10" />
@@ -132,3 +132,4 @@ export const Features = () => {
     </section>
   );
 };
+

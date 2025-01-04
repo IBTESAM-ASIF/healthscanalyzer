@@ -108,7 +108,7 @@ const ProductExplorer = () => {
   };
 
   return (
-    <section className="py-24 relative overflow-hidden bg-gradient-to-b from-background to-background/80">
+    <section id="product-explorer" className="py-24 relative overflow-hidden bg-gradient-to-b from-background to-background/80">
       <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] opacity-10"></div>
       <div className="absolute inset-0 bg-gradient-cosmic"></div>
       
