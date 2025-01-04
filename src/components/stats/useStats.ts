@@ -16,7 +16,7 @@ export const useStats = () => {
       setIsLoading(true);
       const { data: products, error } = await supabase
         .from('products')
-        .select('category, health_score, analysis_cost, created_at, has_fatal_incidents, has_serious_adverse_events, environmental_impact')
+        .select('category, health_score, analysis_cost, created_at, has_fatal_incidents, has_serious_adverse_events, environmental_impact, ingredients')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -62,6 +62,11 @@ export const useStats = () => {
       // Generate random number for active users between 1200 and 13000
       const randomActiveUsers = Math.floor(Math.random() * (13000 - 1200 + 1)) + 1200;
 
+      // Count total ingredients across all products
+      const totalIngredients = products.reduce((acc, product) => {
+        return acc + (product.ingredients?.length || 0);
+      }, 0);
+
       setStats(prev => prev.map(stat => {
         switch(stat.title) {
           case "Total Analyzed":
@@ -87,7 +92,7 @@ export const useStats = () => {
           case "Accuracy Rate":
             return { ...stat, value: `${accuracyRate}%` };
           case "Total Ingredients":
-            return { ...stat, value: '0' };
+            return { ...stat, value: totalIngredients.toString() };
           default:
             return stat;
         }
