@@ -1,5 +1,5 @@
 import { User, Shield, Share2 } from "lucide-react";
-import { Button } from "./ui/button";
+import { WaitlistForm } from "./WaitlistForm";
 
 export const JoinEcosystem = () => {
   return (
@@ -72,22 +72,7 @@ export const JoinEcosystem = () => {
 
         {/* CTA Section */}
         <div className="text-center">
-          <Button 
-            className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:scale-105"
-          >
-            <span className="relative z-10 flex items-center gap-2 text-lg font-medium">
-              Join Waitlist
-              <svg 
-                className="size-5 transition-transform group-hover:translate-x-1" 
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </span>
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          </Button>
+          <WaitlistForm />
           <p className="mt-4 text-sm text-muted-foreground">
             Early access coming soon. Be the first to know!
           </p>
