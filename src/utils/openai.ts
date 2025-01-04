@@ -1,12 +1,11 @@
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.2.1";
+import OpenAI from 'openai';
 
 export const createOpenAIClient = (apiKey: string) => {
-  const configuration = new Configuration({ apiKey });
-  return new OpenAIApi(configuration);
+  return new OpenAI({ apiKey });
 };
 
-export const analyzeProductWithAI = async (openai: OpenAIApi, productData: any) => {
-  const completion = await openai.createChatCompletion({
+export const analyzeProductWithAI = async (openai: OpenAI, productData: any) => {
+  const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
       {
@@ -25,5 +24,5 @@ export const analyzeProductWithAI = async (openai: OpenAIApi, productData: any) 
     temperature: 0.7
   });
 
-  return completion.data.choices[0].message?.content || '';
+  return completion.choices[0].message.content || '';
 };
