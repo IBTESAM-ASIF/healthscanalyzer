@@ -5,7 +5,7 @@ import { Mission } from "@/components/Mission";
 import Navbar from "@/components/Navbar";
 import Statistics from "@/components/Statistics";
 import { HealthAnalysis } from "@/components/HealthAnalysis";
-import { ProductHealthAnalysis } from "@/components/ProductHealthAnalysis";
+import ProductHealthAnalysis from "@/components/ProductHealthAnalysis";
 
 const Index = () => {
   return (
