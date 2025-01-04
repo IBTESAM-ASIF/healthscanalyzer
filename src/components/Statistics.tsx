@@ -9,7 +9,7 @@ import { StatCard } from './stats/StatCard';
 import { StatsHeader } from './stats/StatsHeader';
 import { StatsGrid } from './stats/StatsGrid';
 import { useToast } from './ui/use-toast';
-import _ from 'lodash';
+import { debounce } from 'lodash';
 
 const Statistics = () => {
   const [stats, setStats] = useState([
@@ -155,6 +155,14 @@ const Statistics = () => {
     fetchStats();
 
     // Subscribe to real-time updates with debouncing
+    const debouncedFetchStats = debounce(() => {
+      fetchStats();
+      toast({
+        title: "Statistics Updated",
+        description: "The statistics have been updated with new data.",
+      });
+    }, 1000);
+
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -164,17 +172,12 @@ const Statistics = () => {
           schema: 'public',
           table: 'products'
         },
-        _.debounce(() => {
-          fetchStats();
-          toast({
-            title: "Statistics Updated",
-            description: "The statistics have been updated with new data.",
-          });
-        }, 1000) // Debounce updates to prevent too frequent refreshes
+        debouncedFetchStats
       )
       .subscribe();
 
     return () => {
+      debouncedFetchStats.cancel();
       supabase.removeChannel(channel);
     };
   }, [toast]);
