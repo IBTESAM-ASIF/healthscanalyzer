@@ -25,13 +25,47 @@ async function fetchProductDetails(url: string) {
     
     if (!doc) throw new Error('Failed to parse HTML');
 
+    // Extract full product name
     const productName = doc.querySelector('#productTitle')?.textContent?.trim();
-    const description = doc.querySelector('#productDescription')?.textContent?.trim();
-    const ingredients = doc.querySelector('#important-information')?.textContent
-      ?.match(/ingredients?:([^.]*)/i)?.[1]?.split(',').map(i => i.trim()) || [];
+    
+    // Extract company/brand name
+    let company = '';
+    // Try multiple selectors where brand/company information might be found
+    const brandElement = doc.querySelector('#bylineInfo') || 
+                        doc.querySelector('.contributorNameID') ||
+                        doc.querySelector('[data-feature-name="brandLogo"]');
+    
+    if (brandElement) {
+      company = brandElement.textContent
+        ?.replace('Visit the', '')
+        ?.replace('Brand:', '')
+        ?.replace('Store', '')
+        ?.trim() || '';
+    }
 
-    console.log('Successfully extracted product details');
-    return { name: productName, description, ingredients };
+    // Extract description and ingredients
+    const description = doc.querySelector('#productDescription')?.textContent?.trim();
+    const ingredientsSection = doc.querySelector('#important-information, #ingredient-information')?.textContent || '';
+    const ingredients = ingredientsSection
+      .toLowerCase()
+      .split(/ingredients?:/i)[1]
+      ?.split(/[,.]/)
+      .map(i => i.trim())
+      .filter(i => i.length > 0) || [];
+
+    console.log('Successfully extracted product details:', {
+      name: productName,
+      company: company,
+      ingredients: ingredients.length
+    });
+
+    return { 
+      name: productName, 
+      company, 
+      description, 
+      ingredients,
+      amazon_url: url
+    };
   } catch (error) {
     console.error('Error in fetchProductDetails:', error);
     throw error;
@@ -56,7 +90,11 @@ async function analyzeProduct(openai: OpenAIApi, productData: any) {
         },
         {
           role: "user",
-          content: `Analyze: ${JSON.stringify(productData)}`
+          content: `Analyze this product thoroughly:
+          Product Name: ${productData.name}
+          Company: ${productData.company}
+          Description: ${productData.description}
+          Ingredients: ${productData.ingredients.join(', ')}`
         }
       ]
     });
@@ -94,16 +132,39 @@ serve(async (req) => {
     const productDetails = await fetchProductDetails(url);
     const analysis = await analyzeProduct(openai, productDetails);
 
-    // Store in Supabase
+    // Check if product already exists
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // Check for existing product with same name and company
+    const { data: existingProduct } = await supabaseClient
+      .from('products')
+      .select('id')
+      .eq('name', productDetails.name)
+      .eq('company', productDetails.company)
+      .single();
+
+    if (existingProduct) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Product already exists in the database' 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
+
+    // Insert new product
     const { data, error } = await supabaseClient
       .from('products')
       .insert([{
         name: productDetails.name,
+        company: productDetails.company,
         amazon_url: url,
         ingredients: productDetails.ingredients,
         category: analysis.category?.toLowerCase(),
@@ -112,7 +173,12 @@ serve(async (req) => {
         pros: analysis.pros,
         cons: analysis.cons,
         environmental_impact: analysis.environmentalImpact,
-        safety_incidents: analysis.safetyIncidents || []
+        safety_incidents: analysis.safetyIncidents || [],
+        has_fatal_incidents: analysis.hasFatalIncidents || false,
+        has_serious_adverse_events: analysis.hasSeriousAdverseEvents || false,
+        allergy_risks: analysis.allergyRisks || [],
+        drug_interactions: analysis.drugInteractions || [],
+        special_population_warnings: analysis.specialPopulationWarnings || []
       }]);
 
     if (error) throw error;
