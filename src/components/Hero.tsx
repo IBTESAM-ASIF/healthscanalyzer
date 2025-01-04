@@ -3,7 +3,7 @@ import { ArrowDown, Star } from "lucide-react";
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-24 bg-gradient-to-b from-background via-background/95 to-background/90">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 bg-gradient-to-b from-background via-background/95 to-background/90">
       {/* Enhanced Grid Background with Fade Effect */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
@@ -11,8 +11,7 @@ export const Hero = () => {
       </div>
 
       <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
-        <div className="flex flex-col items-center space-y-10 text-center">
-          {/* Enhanced Launch Badge with Pulse Effect */}
+        <div className="flex flex-col items-center space-y-8 text-center">
           <div className="glass-effect px-6 py-2 rounded-full transform hover:scale-105 transition-transform duration-300 border border-purple-500/20">
             <span className="flex items-center gap-3 text-sm font-medium text-purple-200/90">
               <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse" />
@@ -80,46 +79,51 @@ export const Hero = () => {
           </div>
 
           {/* Enhanced Feature Cards with Better Visual Hierarchy */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 w-full max-w-6xl mt-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full max-w-6xl mt-12">
             {[
               {
                 icon: "🧠",
                 title: "AI Analysis",
                 description: "Advanced ingredient scanning with real-time results",
-                bgColor: "bg-pink-500/20",
+                bgColor: "from-pink-500/20 to-purple-500/20",
               },
               {
                 icon: "🛡️",
                 title: "Health Score",
                 description: "Comprehensive safety ratings and analysis",
-                bgColor: "bg-blue-500/20",
+                bgColor: "from-blue-500/20 to-cyan-500/20",
               },
               {
                 icon: "🚀",
                 title: "Real-time Results",
                 description: "Instant health insights and recommendations",
-                bgColor: "bg-green-500/20",
+                bgColor: "from-green-500/20 to-emerald-500/20",
               },
               {
                 icon: "⚡",
                 title: "Smart Alerts",
                 description: "Proactive notifications about health risks",
-                bgColor: "bg-orange-500/20",
+                bgColor: "from-orange-500/20 to-amber-500/20",
               },
             ].map((feature, index) => (
               <div 
                 key={index}
-                className="glass-effect rounded-xl p-8 hover-lift border border-purple-500/10 group transition-all duration-300 hover:border-purple-500/30"
+                className="glass-effect rounded-xl p-8 hover-lift border border-purple-500/10 group transition-all duration-300 hover:border-purple-500/30 relative overflow-hidden"
               >
-                <div className={`${feature.bgColor} w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                  <span className="text-3xl">{feature.icon}</span>
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.bgColor} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                <div className="relative z-10">
+                  <div className="w-16 h-16 mx-auto rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 bg-white/5 backdrop-blur-sm border border-white/10">
+                    <span className="text-3xl transform group-hover:scale-110 transition-transform duration-300">
+                      {feature.icon}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-primary transition-colors duration-300">
+                    {feature.title}
+                  </h3>
+                  <p className="text-purple-200/70 text-sm leading-relaxed group-hover:text-purple-100/90 transition-colors duration-300">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-primary transition-colors duration-300">
-                  {feature.title}
-                </h3>
-                <p className="text-purple-200/70 text-sm leading-relaxed">
-                  {feature.description}
-                </p>
               </div>
             ))}
           </div>
