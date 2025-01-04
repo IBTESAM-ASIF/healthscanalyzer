@@ -1,4 +1,4 @@
-import { Brain, Shield, Zap } from "lucide-react";
+import { Brain, Database, ChartBar } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 
 const features = [
@@ -8,14 +8,14 @@ const features = [
     icon: Brain,
   },
   {
-    title: "Real-time Processing",
+    title: "Real-time Database",
     description: "Continuous monitoring and updates of product information",
-    icon: Zap,
+    icon: Database,
   },
   {
-    title: "Verified Data",
-    description: "Rigorous verification process ensures reliable information",
-    icon: Shield,
+    title: "Health Analytics",
+    description: "Comprehensive health scoring and ingredient breakdown",
+    icon: ChartBar,
   },
 ];
 
@@ -24,11 +24,11 @@ export const Features = () => {
     <section className="py-24 bg-secondary/20">
       <div className="container px-4 md:px-6">
         <h2 className="text-3xl font-bold tracking-tighter text-center mb-12 text-gradient glow">
-          Powerful Features
+          How It Works
         </h2>
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3">
           {features.map((feature) => (
-            <Card key={feature.title} className="card-gradient border border-primary/20 relative overflow-hidden group transition-all hover:shadow-lg hover:shadow-primary/20 card-glow">
+            <Card key={feature.title} className="card-gradient border-primary/20 relative overflow-hidden group transition-all hover:shadow-lg hover:shadow-primary/20 card-glow hover-lift">
               <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               <CardHeader>
                 <feature.icon className="h-12 w-12 text-primary mb-4" />
