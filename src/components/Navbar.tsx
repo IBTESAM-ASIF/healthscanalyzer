@@ -9,6 +9,15 @@ const Navbar = () => {
     element?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const sections = [
+    "Home",
+    "Statistics",
+    "Features",
+    "Health Analysis",
+    "Product Health",
+    "Product Explorer"
+  ];
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-background/80 border-b border-border/40">
       <div className="container mx-auto">
@@ -23,16 +32,16 @@ const Navbar = () => {
           {/* Navigation Menu */}
           <NavigationMenu className="hidden md:flex">
             <NavigationMenuList className="flex gap-4">
-              {["Home", "Features", "Health Categories", "Mission"].map((item) => (
-                <NavigationMenuItem key={item}>
+              {sections.map((section) => (
+                <NavigationMenuItem key={section}>
                   <NavigationMenuLink
                     className={cn(
                       "text-sm font-medium transition-colors hover:text-primary cursor-pointer",
                       "hover:bg-accent hover:text-accent-foreground rounded-md px-2.5 py-1.5"
                     )}
-                    onClick={() => scrollToSection(item.toLowerCase().replace(" ", "-"))}
+                    onClick={() => scrollToSection(section.toLowerCase().replace(" ", "-"))}
                   >
-                    {item}
+                    {section}
                   </NavigationMenuLink>
                 </NavigationMenuItem>
               ))}
@@ -53,7 +62,7 @@ const Navbar = () => {
               variant="ghost"
               size="icon"
               className="hover:text-primary transition-colors w-8 h-8"
-              onClick={() => window.open("https://telegram.org", "_blank")}
+              onClick={() => window.open("https://t.me/healthscanalyzer", "_blank")}
             >
               <MessageCircle className="h-4 w-4" />
             </Button>
