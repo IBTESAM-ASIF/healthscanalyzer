@@ -8,7 +8,7 @@ const corsHeaders = {
 };
 
 async function generateProductIdeas(openai: OpenAIApi, limit: number = 5) {
-  console.log(`Generating ${limit} product ideas...`);
+  console.log(`[${new Date().toISOString()}] Starting product idea generation for ${limit} products...`);
   const completion = await openai.createChatCompletion({
     model: "gpt-4o-mini",
     messages: [
@@ -19,11 +19,13 @@ async function generateProductIdeas(openai: OpenAIApi, limit: number = 5) {
     ]
   });
 
-  return JSON.parse(completion.data.choices[0].message?.content || '[]');
+  const ideas = JSON.parse(completion.data.choices[0].message?.content || '[]');
+  console.log(`[${new Date().toISOString()}] Successfully generated ${ideas.length} product ideas`);
+  return ideas;
 }
 
 async function analyzeProduct(openai: OpenAIApi, product: any) {
-  console.log(`Analyzing product: ${product.name}`);
+  console.log(`[${new Date().toISOString()}] Analyzing product: ${product.name}`);
   const completion = await openai.createChatCompletion({
     model: "gpt-4o-mini",
     messages: [
@@ -44,7 +46,9 @@ async function analyzeProduct(openai: OpenAIApi, product: any) {
     ]
   });
 
-  return JSON.parse(completion.data.choices[0].message?.content || '{}');
+  const analysis = JSON.parse(completion.data.choices[0].message?.content || '{}');
+  console.log(`[${new Date().toISOString()}] Completed analysis for: ${product.name}`);
+  return analysis;
 }
 
 serve(async (req) => {
@@ -53,12 +57,15 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting automatic product analysis...');
+    console.log(`[${new Date().toISOString()}] Starting automatic product analysis...`);
     
     const { limit = 5 } = await req.json();
     
     const openAiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiKey) throw new Error('OpenAI API key not configured');
+    if (!openAiKey) {
+      console.error(`[${new Date().toISOString()}] Error: OpenAI API key not configured`);
+      throw new Error('OpenAI API key not configured');
+    }
 
     const configuration = new Configuration({ apiKey: openAiKey });
     const openai = new OpenAIApi(configuration);
@@ -69,15 +76,17 @@ serve(async (req) => {
     );
 
     const productIdeas = await generateProductIdeas(openai, limit);
-    console.log(`Generated ${productIdeas.length} product ideas`);
+    console.log(`[${new Date().toISOString()}] Generated ${productIdeas.length} product ideas`);
 
     const analyzedProducts = await Promise.all(
       productIdeas.map(product => analyzeProduct(openai, product))
     );
-    console.log(`Analyzed ${analyzedProducts.length} products`);
+    console.log(`[${new Date().toISOString()}] Analyzed ${analyzedProducts.length} products`);
 
-    const insertPromises = analyzedProducts.map(product => 
-      supabaseClient
+    // Insert new products with detailed logging
+    for (const product of analyzedProducts) {
+      console.log(`[${new Date().toISOString()}] Inserting product: ${product.name}`);
+      const { error } = await supabaseClient
         .from('products')
         .insert([{
           name: product.name,
@@ -88,21 +97,28 @@ serve(async (req) => {
           cons: product.cons,
           safety_incidents: product.safetyIncidents || [],
           created_at: new Date().toISOString()
-        }])
-    );
+        }]);
+      
+      if (error) {
+        console.error(`[${new Date().toISOString()}] Error inserting product ${product.name}:`, error);
+      } else {
+        console.log(`[${new Date().toISOString()}] Successfully inserted product: ${product.name}`);
+      }
+    }
 
-    await Promise.all(insertPromises);
+    console.log(`[${new Date().toISOString()}] Product analysis cycle completed successfully`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        productsAnalyzed: analyzedProducts.length 
+        productsAnalyzed: analyzedProducts.length,
+        timestamp: new Date().toISOString()
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error(`[${new Date().toISOString()}] Error in auto-product-analysis:`, error);
     return new Response(
       JSON.stringify({ error: error.message }),
       { 
