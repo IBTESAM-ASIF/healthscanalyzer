@@ -16,7 +16,7 @@ export const useStats = () => {
       setIsLoading(true);
       const { data: products, error } = await supabase
         .from('products')
-        .select('category, health_score')
+        .select('category, health_score, analysis_cost')
         .order('created_at', { ascending: false });
       
       if (error) throw error;
@@ -34,6 +34,9 @@ export const useStats = () => {
       const avgHealthScore = products.length > 0 
         ? products.reduce((acc, curr) => acc + (curr.health_score || 0), 0) / totalAnalyzed 
         : 0;
+      const avgAnalysisCost = products.length > 0
+        ? products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0) / totalAnalyzed
+        : 0;
 
       setStats(prev => prev.map(stat => {
         switch(stat.title) {
@@ -47,6 +50,8 @@ export const useStats = () => {
             return { ...stat, value: moderateRisk.toString() };
           case "Average Health Score":
             return { ...stat, value: `${Math.round(avgHealthScore)}%` };
+          case "Avg Analysis Cost":
+            return { ...stat, value: `$${avgAnalysisCost.toFixed(6)}` };
           default:
             return stat;
         }

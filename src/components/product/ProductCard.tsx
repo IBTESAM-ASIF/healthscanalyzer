@@ -1,9 +1,11 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Brain, AlertTriangle, Shield, Leaf, HeartPulse, ThumbsUp, ThumbsDown, BrainCircuit } from 'lucide-react';
+import { AlertTriangle, Shield, Leaf } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Progress } from "@/components/ui/progress";
+import { HealthScore } from './card/HealthScore';
+import { AIAnalysis } from './card/AIAnalysis';
+import { ProsConsSection } from './card/ProsConsSection';
 
 interface ProductCardProps {
   product: {
@@ -22,6 +24,7 @@ interface ProductCardProps {
     special_population_warnings?: string[];
     environmental_impact?: string;
     safety_incidents?: string[];
+    analysis_cost?: number;
   };
 }
 
@@ -70,41 +73,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </div>
 
           <div className="grid gap-4">
-            {/* Health Score */}
-            {product.health_score !== undefined && (
-              <div className="space-y-2 bg-gray-900/40 p-4 rounded-lg border border-gray-800">
-                <div className="flex items-center gap-2 mb-2">
-                  <HeartPulse className="w-5 h-5 text-pink-500" />
-                  <span className="text-sm font-medium text-gray-300">Health Score</span>
-                </div>
-                <div className="space-y-2">
-                  <Progress value={product.health_score} className="h-2" />
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-400">Score</span>
-                    <span className={`font-medium ${
-                      product.health_score > 70 ? 'text-emerald-400' :
-                      product.health_score > 40 ? 'text-amber-400' :
-                      'text-red-400'
-                    }`}>
-                      {product.health_score}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* AI Analysis */}
-            <div className="space-y-2 bg-gray-900/40 p-4 rounded-lg border border-gray-800">
-              <div className="flex items-center gap-2 mb-2">
-                <BrainCircuit className="w-5 h-5 text-purple-500" />
-                <span className="text-sm font-medium text-gray-300">AI Analysis</span>
-              </div>
-              <Progress value={98.5} className="h-2" />
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400">Accuracy</span>
-                <span className="font-medium text-purple-400">98.5%</span>
-              </div>
-            </div>
+            <HealthScore score={product.health_score} />
+            <AIAnalysis analysisCost={product.analysis_cost} />
           </div>
 
           {product.analysis_summary && (
@@ -113,42 +83,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             </div>
           )}
 
-          {/* Pros & Cons */}
-          <div className="grid grid-cols-2 gap-4">
-            {product.pros && product.pros.length > 0 && (
-              <div className="space-y-2 bg-emerald-900/20 p-4 rounded-lg border border-emerald-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <ThumbsUp className="w-4 h-4 text-emerald-400" />
-                  <span className="text-sm font-medium text-emerald-400">Benefits</span>
-                </div>
-                <ul className="space-y-1">
-                  {product.pros.map((pro, index) => (
-                    <li key={index} className="text-xs text-emerald-300 flex items-start gap-1">
-                      <span className="mt-1">•</span>
-                      {pro}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {product.cons && product.cons.length > 0 && (
-              <div className="space-y-2 bg-red-900/20 p-4 rounded-lg border border-red-500/20">
-                <div className="flex items-center gap-2 mb-2">
-                  <ThumbsDown className="w-4 h-4 text-red-400" />
-                  <span className="text-sm font-medium text-red-400">Risks</span>
-                </div>
-                <ul className="space-y-1">
-                  {product.cons.map((con, index) => (
-                    <li key={index} className="text-xs text-red-300 flex items-start gap-1">
-                      <span className="mt-1">•</span>
-                      {con}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+          <ProsConsSection pros={product.pros} cons={product.cons} />
 
           {/* Safety Warnings */}
           {hasSafetyWarnings && (
