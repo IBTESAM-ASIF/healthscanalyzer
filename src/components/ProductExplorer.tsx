@@ -16,6 +16,26 @@ const ProductExplorer = () => {
 
   useEffect(() => {
     fetchProducts();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        () => {
+          fetchProducts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [activeCategory]);
 
   const fetchProducts = async () => {

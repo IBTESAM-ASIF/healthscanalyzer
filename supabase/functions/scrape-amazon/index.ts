@@ -36,7 +36,7 @@ serve(async (req) => {
 
     // Use GPT to generate sample product data (in production, this would be real Amazon scraping)
     const completion = await openai.createChatCompletion({
-      model: "gpt-4",
+      model: "gpt-4o-mini",
       messages: [{
         role: "system",
         content: "You are a product researcher analyzing Amazon products. Generate realistic product data."
@@ -68,6 +68,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error in scrape-amazon function:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
