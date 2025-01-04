@@ -7,7 +7,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function searchProducts(openai: OpenAIApi) {
+const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+if (!openAIApiKey) throw new Error('Missing OpenAI API key');
+if (!supabaseUrl) throw new Error('Missing Supabase URL');
+if (!supabaseServiceRoleKey) throw new Error('Missing Supabase service role key');
+
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+const openai = new OpenAIApi(new Configuration({ apiKey: openAIApiKey }));
+
+async function searchProducts() {
   console.log(`[${new Date().toISOString()}] Starting product search phase...`);
   
   try {
@@ -42,7 +53,7 @@ async function searchProducts(openai: OpenAIApi) {
   }
 }
 
-async function analyzeProduct(openai: OpenAIApi, product: any) {
+async function analyzeProduct(product: any) {
   console.log(`[${new Date().toISOString()}] Starting deep analysis for: ${product.name}`);
   
   try {
@@ -84,11 +95,11 @@ async function analyzeProduct(openai: OpenAIApi, product: any) {
   }
 }
 
-async function uploadToDatabase(supabaseClient: any, product: any, analysis: any) {
+async function uploadToDatabase(product: any, analysis: any) {
   console.log(`[${new Date().toISOString()}] Uploading product to database: ${product.name}`);
   
   try {
-    const { error } = await supabaseClient
+    const { error } = await supabase
       .from('products')
       .insert([{
         name: product.name,
@@ -130,35 +141,19 @@ serve(async (req) => {
     const cycleStartTime = new Date();
     console.log(`[${cycleStartTime.toISOString()}] Starting analysis cycle`);
     
-    // Initialize OpenAI
-    const openAiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiKey) {
-      console.error(`[${cycleStartTime.toISOString()}] Error: OpenAI API key not configured`);
-      throw new Error('OpenAI API key not configured');
-    }
-
-    const configuration = new Configuration({ apiKey: openAiKey });
-    const openai = new OpenAIApi(configuration);
-
-    // Initialize Supabase
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
-
     // Phase 1: Product Search (0-4 minutes)
     console.log(`[${new Date().toISOString()}] Starting Phase 1: Product Search`);
-    const products = await searchProducts(openai);
+    const products = await searchProducts();
     
     // Phase 2: Deep Analysis (5-9 minutes)
     console.log(`[${new Date().toISOString()}] Starting Phase 2: Deep Analysis`);
-    const analysisPromises = products.map(product => analyzeProduct(openai, product));
+    const analysisPromises = products.map(product => analyzeProduct(product));
     const analyses = await Promise.all(analysisPromises);
     
     // Phase 3: Database Upload (minute 10)
     console.log(`[${new Date().toISOString()}] Starting Phase 3: Database Upload`);
     for (let i = 0; i < products.length; i++) {
-      await uploadToDatabase(supabaseClient, products[i], analyses[i]);
+      await uploadToDatabase(products[i], analyses[i]);
     }
 
     const cycleEndTime = new Date();
