@@ -3,94 +3,125 @@ import { ArrowDown, Star } from "lucide-react";
 
 export const Hero = () => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-24">
-      <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:linear-gradient(to_bottom,white,transparent)] opacity-30" />
-      <div className="container px-4 md:px-6 relative z-10">
-        <div className="flex flex-col items-center space-y-8 text-center">
-          {/* Launch Badge */}
-          <div className="glass-effect px-4 py-2 rounded-full">
-            <span className="flex items-center gap-2 text-sm text-purple-200/90">
-              <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-24 bg-gradient-to-b from-background via-background/95 to-background/90">
+      {/* Enhanced Grid Background with Fade Effect */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
+        <div className="absolute inset-0 bg-gradient-cosmic opacity-30" />
+      </div>
+
+      <div className="container px-4 md:px-6 relative z-10 mx-auto max-w-7xl">
+        <div className="flex flex-col items-center space-y-10 text-center">
+          {/* Enhanced Launch Badge with Pulse Effect */}
+          <div className="glass-effect px-6 py-2 rounded-full transform hover:scale-105 transition-transform duration-300 border border-purple-500/20">
+            <span className="flex items-center gap-3 text-sm font-medium text-purple-200/90">
+              <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse" />
               Launching Q1 2025
-              <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs">Coming Soon</span>
+              <span className="bg-primary/20 text-primary px-3 py-0.5 rounded-full text-xs font-semibold tracking-wide">
+                Coming Soon
+              </span>
             </span>
           </div>
 
-          {/* Main Title */}
-          <div className="space-y-4">
-            <h1 className="text-6xl md:text-7xl font-bold tracking-tighter glow text-gradient">
-              Health Harmony
+          {/* Enhanced Main Title with Dynamic Gradient */}
+          <div className="space-y-6 max-w-4xl">
+            <h1 className="text-7xl md:text-8xl font-bold tracking-tighter glow animate-fade-in">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-purple-500 animate-gradient">
+                Health Harmony
+              </span>
             </h1>
-            <div className="flex items-center justify-center gap-3 text-2xl md:text-3xl text-purple-400">
-              <span className="text-pink-500">🧠</span>
-              AI-Powered Food Analysis
-              <span className="text-purple-500">🛡️</span>
+            <div className="flex items-center justify-center gap-4 text-2xl md:text-3xl text-purple-300/90 font-light">
+              <span className="text-pink-500/90">🧠</span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">
+                AI-Powered Food Analysis
+              </span>
+              <span className="text-purple-500/90">🛡️</span>
             </div>
           </div>
 
-          {/* Description */}
-          <p className="text-lg md:text-xl text-purple-200/90 max-w-[800px]">
+          {/* Enhanced Description with Better Typography */}
+          <p className="text-xl md:text-2xl text-purple-200/80 max-w-3xl leading-relaxed font-light">
             Discover the truth about your food with our advanced AI-powered ingredient analysis system. 
             Making healthy choices has never been easier with{" "}
-            <span className="text-blue-400">real-time insights</span> and{" "}
-            <span className="text-green-400">comprehensive health scores</span>.
+            <span className="text-blue-400/90 font-medium">real-time insights</span> and{" "}
+            <span className="text-green-400/90 font-medium">comprehensive health scores</span>.
           </p>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 mt-8">
+          {/* Enhanced CTA Buttons with Better Hover Effects */}
+          <div className="flex flex-col sm:flex-row gap-6 mt-12">
             <Button 
-              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full group"
+              className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:scale-105"
               onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              Learn More
-              <ArrowDown className="ml-2 h-4 w-4 transition-transform group-hover:translate-y-1" />
+              <span className="relative z-10 flex items-center gap-2 text-lg font-medium">
+                Learn More
+                <ArrowDown className="ml-2 h-5 w-5 transition-transform group-hover:translate-y-1" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </Button>
             <Button 
-              className="bg-background/20 backdrop-blur-sm border border-purple-500/30 hover:bg-background/30 text-white px-8 py-6 rounded-full group"
+              className="bg-background/20 backdrop-blur-sm border border-purple-500/30 hover:bg-background/30 text-white px-8 py-6 rounded-full group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:scale-105"
             >
-              View Products
-              <Star className="ml-2 h-4 w-4 transition-transform group-hover:scale-110" />
+              <span className="relative z-10 flex items-center gap-2 text-lg font-medium">
+                View Products
+                <Star className="ml-2 h-5 w-5 transition-transform group-hover:rotate-45" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </Button>
           </div>
 
-          {/* Timer */}
-          <div className="text-purple-200/70 text-sm mt-8">
-            <span className="flex items-center gap-2">
-              <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse"></span>
-              Next product analysis in: 2:07
+          {/* Enhanced Timer with Better Visual Feedback */}
+          <div className="text-purple-200/70 text-sm mt-8 glass-effect px-6 py-2 rounded-full">
+            <span className="flex items-center gap-3">
+              <span className="inline-block w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <span className="font-medium">Next product analysis in: </span>
+              <span className="text-primary font-mono">2:07</span>
             </span>
           </div>
 
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 w-full max-w-6xl mt-16">
-            <div className="glass-effect rounded-xl p-6 hover-lift border border-purple-500/10">
-              <div className="bg-pink-500/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🧠</span>
+          {/* Enhanced Feature Cards with Better Visual Hierarchy */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 w-full max-w-6xl mt-16">
+            {[
+              {
+                icon: "🧠",
+                title: "AI Analysis",
+                description: "Advanced ingredient scanning with real-time results",
+                bgColor: "bg-pink-500/20",
+              },
+              {
+                icon: "🛡️",
+                title: "Health Score",
+                description: "Comprehensive safety ratings and analysis",
+                bgColor: "bg-blue-500/20",
+              },
+              {
+                icon: "🚀",
+                title: "Real-time Results",
+                description: "Instant health insights and recommendations",
+                bgColor: "bg-green-500/20",
+              },
+              {
+                icon: "⚡",
+                title: "Smart Alerts",
+                description: "Proactive notifications about health risks",
+                bgColor: "bg-orange-500/20",
+              },
+            ].map((feature, index) => (
+              <div 
+                key={index}
+                className="glass-effect rounded-xl p-8 hover-lift border border-purple-500/10 group transition-all duration-300 hover:border-purple-500/30"
+              >
+                <div className={`${feature.bgColor} w-14 h-14 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                  <span className="text-3xl">{feature.icon}</span>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-3 group-hover:text-primary transition-colors duration-300">
+                  {feature.title}
+                </h3>
+                <p className="text-purple-200/70 text-sm leading-relaxed">
+                  {feature.description}
+                </p>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">AI Analysis</h3>
-              <p className="text-purple-200/70 text-sm">Advanced ingredient scanning with real-time results</p>
-            </div>
-            <div className="glass-effect rounded-xl p-6 hover-lift border border-purple-500/10">
-              <div className="bg-blue-500/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🛡️</span>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Health Score</h3>
-              <p className="text-purple-200/70 text-sm">Comprehensive safety ratings and analysis</p>
-            </div>
-            <div className="glass-effect rounded-xl p-6 hover-lift border border-purple-500/10">
-              <div className="bg-green-500/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">🚀</span>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Real-time Results</h3>
-              <p className="text-purple-200/70 text-sm">Instant health insights and recommendations</p>
-            </div>
-            <div className="glass-effect rounded-xl p-6 hover-lift border border-purple-500/10">
-              <div className="bg-orange-500/20 w-12 h-12 rounded-lg flex items-center justify-center mb-4">
-                <span className="text-2xl">⚡</span>
-              </div>
-              <h3 className="text-lg font-semibold text-white mb-2">Smart Alerts</h3>
-              <p className="text-purple-200/70 text-sm">Proactive notifications about health risks</p>
-            </div>
+            ))}
           </div>
         </div>
       </div>
