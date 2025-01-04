@@ -4,17 +4,31 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
-  const [timeLeft, setTimeLeft] = useState('2:00');
+  const [timeLeft, setTimeLeft] = useState('10:00');
   const navigate = useNavigate();
 
   useEffect(() => {
     const updateTimer = () => {
       const now = new Date();
-      const minutes = 9 - (now.getMinutes() % 10);
-      const seconds = 59 - now.getSeconds();
-      setTimeLeft(`${minutes}:${seconds.toString().padStart(2, '0')}`);
+      const minutes = now.getMinutes();
+      const seconds = now.getSeconds();
+      
+      // Calculate time until next 10-minute mark
+      const nextCycleMinutes = 10 - (minutes % 10);
+      const nextCycleSeconds = 60 - seconds;
+      
+      // If we're at the last second of a cycle, show 10:00
+      if (nextCycleMinutes === 10 && nextCycleSeconds === 60) {
+        setTimeLeft('10:00');
+      } else {
+        // Otherwise show countdown to next cycle
+        const displayMinutes = nextCycleMinutes - (nextCycleSeconds === 60 ? 0 : 1);
+        const displaySeconds = nextCycleSeconds === 60 ? 0 : nextCycleSeconds;
+        setTimeLeft(`${displayMinutes}:${displaySeconds.toString().padStart(2, '0')}`);
+      }
     };
 
+    // Update immediately and then every second
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
 
