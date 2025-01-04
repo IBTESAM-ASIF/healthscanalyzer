@@ -19,7 +19,6 @@ const Navbar = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Real-time sync for products
   useEffect(() => {
     const channel = supabase
       .channel('schema-db-changes')
@@ -54,7 +53,11 @@ const Navbar = () => {
       });
       setIsMobileMenuOpen(false);
     } else {
-      console.log(`Section with id "${id}" not found`);
+      console.error(`Section with id "${id}" not found. Available sections:`, 
+        document.querySelectorAll('section').forEach(section => 
+          console.log(section.id)
+        )
+      );
     }
   };
 
@@ -102,7 +105,6 @@ const Navbar = () => {
     >
       <div className="container mx-auto">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <div className="flex-shrink-0">
             <h1 
               className="text-xl font-bold tracking-tighter cursor-pointer bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent hover:from-purple-500 hover:via-pink-600 hover:to-purple-700 transition-all duration-300"
@@ -112,7 +114,6 @@ const Navbar = () => {
             </h1>
           </div>
 
-          {/* Desktop Navigation Menu */}
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList className="flex gap-1">
               {sections.map((section) => (
@@ -133,7 +134,6 @@ const Navbar = () => {
             </NavigationMenuList>
           </NavigationMenu>
 
-          {/* Social Media Icons */}
           <div className="hidden md:flex items-center gap-2">
             {socialLinks.map((social) => (
               <Button
@@ -151,7 +151,6 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Mobile Menu */}
           <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <SheetTrigger asChild className="lg:hidden">
               <Button variant="ghost" size="icon">
