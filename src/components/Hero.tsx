@@ -1,9 +1,11 @@
 import { Button } from "./ui/button";
 import { ArrowDown, Star } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
   const [timeLeft, setTimeLeft] = useState('2:00');
+  const navigate = useNavigate();
 
   useEffect(() => {
     const updateTimer = () => {
@@ -18,6 +20,20 @@ export const Hero = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  const handleLearnMore = () => {
+    const featuresSection = document.getElementById('features');
+    if (featuresSection) {
+      featuresSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleViewProducts = () => {
+    const productsSection = document.getElementById('product-explorer');
+    if (productsSection) {
+      productsSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden py-20 bg-gradient-to-b from-background via-background/95 to-background/90">
@@ -67,7 +83,7 @@ export const Hero = () => {
           <div className="flex flex-col sm:flex-row gap-6 mt-12">
             <Button 
               className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] hover:scale-105"
-              onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={handleLearnMore}
             >
               <span className="relative z-10 flex items-center gap-2 text-lg font-medium">
                 Learn More
@@ -77,6 +93,7 @@ export const Hero = () => {
             </Button>
             <Button 
               className="bg-background/20 backdrop-blur-sm border border-purple-500/30 hover:bg-background/30 text-white px-8 py-6 rounded-full group relative overflow-hidden transition-all duration-300 ease-out hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] hover:scale-105"
+              onClick={handleViewProducts}
             >
               <span className="relative z-10 flex items-center gap-2 text-lg font-medium">
                 View Products

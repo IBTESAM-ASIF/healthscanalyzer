@@ -1,50 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProductHealthAnalysis = () => {
   const [data, setData] = useState([]);
+  const { toast } = useToast();
+
+  const fetchAnalysisData = async () => {
+    try {
+      const endDate = new Date();
+      const startDate = new Date(endDate);
+      startDate.setDate(startDate.getDate() - 10);
+
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('category, created_at')
+        .gte('created_at', startDate.toISOString())
+        .lte('created_at', endDate.toISOString())
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      const dailyData = [];
+      for (let i = 0; i < 10; i++) {
+        const date = new Date(endDate);
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+        
+        const dayProducts = products.filter(p => 
+          new Date(p.created_at).toDateString() === date.toDateString()
+        );
+
+        dailyData.unshift({
+          date: dateStr,
+          healthy: dayProducts.filter(p => p.category === 'healthy').length,
+          restricted: dayProducts.filter(p => p.category === 'restricted').length,
+          harmful: dayProducts.filter(p => p.category === 'harmful').length,
+        });
+      }
+
+      setData(dailyData);
+    } catch (error) {
+      console.error('Error fetching analysis data:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch analysis data. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
 
   useEffect(() => {
-    const fetchAnalysisData = async () => {
-      try {
-        const endDate = new Date();
-        const startDate = new Date(endDate);
-        startDate.setDate(startDate.getDate() - 10);
-
-        const { data: products, error } = await supabase
-          .from('products')
-          .select('category, created_at')
-          .gte('created_at', startDate.toISOString())
-          .lte('created_at', endDate.toISOString())
-          .order('created_at', { ascending: true });
-
-        if (error) throw error;
-
-        const dailyData = [];
-        for (let i = 0; i < 10; i++) {
-          const date = new Date(endDate);
-          date.setDate(date.getDate() - i);
-          const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
-          
-          const dayProducts = products.filter(p => 
-            new Date(p.created_at).toDateString() === date.toDateString()
-          );
-
-          dailyData.unshift({
-            date: dateStr,
-            healthy: dayProducts.filter(p => p.category === 'healthy').length,
-            restricted: dayProducts.filter(p => p.category === 'restricted').length,
-            harmful: dayProducts.filter(p => p.category === 'harmful').length,
-          });
-        }
-
-        setData(dailyData);
-      } catch (error) {
-        console.error('Error fetching analysis data:', error);
-      }
-    };
-
     fetchAnalysisData();
 
     // Subscribe to real-time updates
@@ -59,6 +66,10 @@ const ProductHealthAnalysis = () => {
         },
         () => {
           fetchAnalysisData();
+          toast({
+            title: "Data Updated",
+            description: "Product distribution chart has been updated with new data.",
+          });
         }
       )
       .subscribe();
