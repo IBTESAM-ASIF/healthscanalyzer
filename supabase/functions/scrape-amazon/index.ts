@@ -1,28 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.2.1";
-import { DOMParser } from "https://deno.land/x/deno_dom/deno-dom-wasm.ts";
+import { createClient } from '@supabase/supabase-js';
+import { corsHeaders } from './cors.ts';
+import OpenAI from 'https://deno.land/x/openai@v4.24.0/mod.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const openai = new OpenAI(Deno.env.get('OPENAI_API_KEY') || '');
 
 async function fetchProductDetails(url: string) {
   try {
-    console.log('Fetching product details from:', url);
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-
-    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Failed to fetch product page');
     
     const html = await response.text();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, 'text/html');
-    
+    const doc = new DOMParser().parseFromString(html, 'text/html');
     if (!doc) throw new Error('Failed to parse HTML');
 
     // Extract full product name
@@ -72,21 +61,15 @@ async function fetchProductDetails(url: string) {
   }
 }
 
-async function analyzeProduct(openai: OpenAIApi, productData: any) {
+async function analyzeProduct(openai: OpenAI, productData: any) {
   try {
-    console.log('Starting AI analysis for:', productData.name);
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4",
+      temperature: 0.7,
       messages: [
         {
           role: "system",
-          content: `You are a product safety expert. Analyze products and provide:
-            1. Health score (0-100)
-            2. Category (healthy/restricted/harmful)
-            3. Analysis summary
-            4. Pros and cons
-            5. Safety considerations
-            Format as JSON.`
+          content: `You are a product safety analyst. Analyze products and their ingredients to determine their safety category (healthy, restricted, or harmful) and provide detailed analysis. Include specific health impacts, risks, and environmental considerations. Format response as JSON with fields: category, healthScore (0-100), summary, pros (array), cons (array), environmentalImpact, safetyIncidents (array), hasFatalIncidents (boolean), hasSeriousAdverseEvents (boolean), allergyRisks (array), drugInteractions (array), specialPopulationWarnings (array).`
         },
         {
           role: "user",
@@ -99,8 +82,8 @@ async function analyzeProduct(openai: OpenAIApi, productData: any) {
       ]
     });
 
-    const analysis = JSON.parse(completion.data.choices[0].message?.content || '{}');
-    console.log('AI analysis completed successfully');
+    const analysis = JSON.parse(completion.choices[0].message.content);
+    console.log('Analysis completed successfully');
     return analysis;
   } catch (error) {
     console.error('Error in analyzeProduct:', error);
@@ -110,25 +93,14 @@ async function analyzeProduct(openai: OpenAIApi, productData: any) {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
     const { url } = await req.json();
+    if (!url) throw new Error('URL is required');
+
     console.log('Processing URL:', url);
-
-    if (!url?.includes('amazon.com')) {
-      throw new Error('Invalid Amazon URL');
-    }
-
-    // Initialize OpenAI
-    const openAiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAiKey) throw new Error('OpenAI API key not configured');
-
-    const configuration = new Configuration({ apiKey: openAiKey });
-    const openai = new OpenAIApi(configuration);
-
-    // Fetch and analyze product
     const productDetails = await fetchProductDetails(url);
     const analysis = await analyzeProduct(openai, productDetails);
 
@@ -189,12 +161,12 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in edge function:', error);
+    console.error('Error processing request:', error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500
       }
     );
   }

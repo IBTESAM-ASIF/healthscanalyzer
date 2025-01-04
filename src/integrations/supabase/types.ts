@@ -19,6 +19,7 @@ export type Database = {
           category:
             | Database["public"]["Enums"]["product_health_category"]
             | null
+          company: string | null
           cons: string[] | null
           created_at: string | null
           drug_interactions: string[] | null
@@ -42,6 +43,7 @@ export type Database = {
           category?:
             | Database["public"]["Enums"]["product_health_category"]
             | null
+          company?: string | null
           cons?: string[] | null
           created_at?: string | null
           drug_interactions?: string[] | null
@@ -65,6 +67,7 @@ export type Database = {
           category?:
             | Database["public"]["Enums"]["product_health_category"]
             | null
+          company?: string | null
           cons?: string[] | null
           created_at?: string | null
           drug_interactions?: string[] | null
