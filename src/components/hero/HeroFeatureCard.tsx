@@ -20,9 +20,9 @@ export const HeroFeatureCard = ({ icon: Icon, title, description, gradient }: He
                      overflow-hidden shadow-lg hover:border-purple-500/30 transition-all duration-300`}>
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-0 
                        group-hover:opacity-100 transition-opacity duration-500`} />
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col items-center text-center">
           <div className="p-3 rounded-lg bg-purple-500/10 group-hover:bg-purple-500/20 
-                        transition-colors duration-300 w-14 h-14 mx-auto flex items-center justify-center mb-4">
+                        transition-colors duration-300 w-14 h-14 flex items-center justify-center mb-4">
             <Icon className="w-7 h-7 text-purple-400 group-hover:scale-110 
                          transition-transform duration-300" />
           </div>
