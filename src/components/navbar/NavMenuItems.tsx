@@ -1,6 +1,6 @@
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink } from "@/components/ui/navigation-menu";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const sections = [
   { id: "hero", label: "Home" },
@@ -28,22 +28,30 @@ export const scrollToSection = (id: string, setMobileMenuOpen?: (open: boolean) 
     if (setMobileMenuOpen) {
       setMobileMenuOpen(false);
     }
-  } else {
-    console.error(`Section with id "${id}" not found`);
-    const toast = useToast();
-    toast({
-      title: "Navigation Error",
-      description: `Could not find section "${id}". Please try again later.`,
-      variant: "destructive",
-    });
-    
-    // Log available sections for debugging
-    const availableSections = Array.from(document.querySelectorAll('section')).map(section => section.id);
-    console.log('Available sections:', availableSections);
   }
 };
 
 export const NavMenuItems = () => {
+  const { toast } = useToast();
+
+  const handleSectionClick = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (!element) {
+      // Log available sections for debugging
+      const availableSections = Array.from(document.querySelectorAll('section')).map(section => section.id);
+      console.log('Available sections:', availableSections);
+      
+      toast({
+        title: "Navigation Error",
+        description: `Could not find section "${sectionId}". Please try again later.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    scrollToSection(sectionId);
+  };
+
   return (
     <NavigationMenu className="hidden lg:flex">
       <NavigationMenuList className="flex gap-1">
@@ -56,7 +64,7 @@ export const NavMenuItems = () => {
                 "hover:scale-105 active:scale-95",
                 "focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-background"
               )}
-              onClick={() => scrollToSection(section.id)}
+              onClick={() => handleSectionClick(section.id)}
             >
               {section.label}
             </NavigationMenuLink>
