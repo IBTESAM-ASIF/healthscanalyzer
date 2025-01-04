@@ -58,7 +58,7 @@ export const Hero = () => {
   ];
 
   return (
-    <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden py-12 sm:py-16">
+    <section className="relative min-h-[90vh] flex items-center justify-center py-8">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-purple-500/10 via-violet-500/5 to-background/90" />
@@ -71,13 +71,13 @@ export const Hero = () => {
         initial="hidden"
         animate="visible"
         variants={containerVariants}
-        className="container px-4 relative z-10 mx-auto max-w-6xl"
+        className="container relative z-10 mx-auto max-w-6xl px-4"
       >
-        <div className="flex flex-col items-center space-y-6 text-center">
+        <div className="flex flex-col items-center space-y-4">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass-effect px-4 sm:px-6 py-2 rounded-full transform hover:scale-105 transition-all duration-300 border border-purple-500/20 group cursor-pointer"
+            className="glass-effect px-3 py-1.5 rounded-full transform hover:scale-105 transition-all duration-300 border border-purple-500/20 group cursor-pointer"
           >
             <span className="flex items-center gap-2 text-sm font-medium text-purple-200/90">
               <Sparkles className="w-4 h-4 text-primary animate-pulse" />
@@ -91,7 +91,7 @@ export const Hero = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-4 max-w-3xl"
+            className="space-y-3 max-w-3xl text-center"
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter animate-fade-in">
               <span className="inline-block bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-purple-500 animate-gradient">
@@ -110,7 +110,7 @@ export const Hero = () => {
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-lg sm:text-xl md:text-2xl text-purple-200/80 max-w-2xl leading-relaxed font-light"
+            className="text-lg sm:text-xl md:text-2xl text-purple-200/80 max-w-2xl leading-relaxed font-light text-center"
           >
             Discover the truth about your food with our advanced AI-powered ingredient analysis system. 
             Making healthy choices has never been easier with{" "}
@@ -124,7 +124,7 @@ export const Hero = () => {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl mt-8"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full max-w-6xl mt-6"
           >
             {features.map((feature, index) => (
               <HeroFeatureCard key={index} {...feature} />

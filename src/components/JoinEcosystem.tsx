@@ -3,22 +3,20 @@ import { WaitlistForm } from "./WaitlistForm";
 
 export const JoinEcosystem = () => {
   return (
-    <section className="py-24 px-4 bg-gradient-to-b from-background/95 to-background/90 relative overflow-hidden">
-      {/* Background Effects */}
+    <section className="py-16 px-4 bg-gradient-to-b from-background/95 to-background/90 relative overflow-hidden">
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-grid-white/10 bg-[size:20px_20px] [mask-image:radial-gradient(white,transparent_85%)] opacity-20" />
         <div className="absolute inset-0 bg-gradient-cosmic opacity-30" />
       </div>
 
       <div className="container mx-auto relative z-10">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-secondary/50 px-4 py-1.5 rounded-full mb-6">
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-full mb-4">
             <span className="size-2 rounded-full bg-primary animate-pulse" />
             <span className="text-sm font-medium text-purple-200/90">Join Our Community</span>
           </div>
           
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-purple-500 animate-gradient">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-purple-500 animate-gradient">
             Join Our Ecosystem
           </h2>
           
@@ -28,8 +26,7 @@ export const JoinEcosystem = () => {
           </p>
         </div>
 
-        {/* Feature Cards */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
           {[
             {
               icon: <User className="size-8" />,
@@ -55,12 +52,12 @@ export const JoinEcosystem = () => {
           ].map((feature, index) => (
             <div
               key={index}
-              className="glass-effect rounded-2xl p-8 hover-lift border border-purple-500/10 group transition-all duration-300 hover:border-purple-500/30"
+              className="glass-effect rounded-2xl p-6 hover-lift border border-purple-500/10 group transition-all duration-300 hover:border-purple-500/30"
             >
-              <div className={`${feature.iconBg} ${feature.iconColor} size-16 rounded-2xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110`}>
+              <div className={`${feature.iconBg} ${feature.iconColor} size-14 rounded-2xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110`}>
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-semibold mb-4 text-white group-hover:text-primary transition-colors duration-300">
+              <h3 className="text-xl font-semibold mb-3 text-white group-hover:text-primary transition-colors duration-300">
                 {feature.title}
               </h3>
               <p className="text-muted-foreground group-hover:text-purple-100/90 transition-colors duration-300">
@@ -70,10 +67,9 @@ export const JoinEcosystem = () => {
           ))}
         </div>
 
-        {/* CTA Section */}
         <div className="text-center">
           <WaitlistForm />
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="mt-3 text-sm text-muted-foreground">
             Early access coming soon. Be the first to know!
           </p>
         </div>

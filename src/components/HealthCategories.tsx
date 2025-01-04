@@ -26,19 +26,19 @@ const categories = [
 
 export const HealthCategories = () => {
   return (
-    <section className="py-24 bg-secondary/10">
-      <div className="container px-4 md:px-6">
-        <h2 className="text-3xl font-bold tracking-tighter text-center mb-12 text-gradient glow">Health Categories</h2>
-        <div className="grid gap-8 md:grid-cols-3">
+    <section className="py-16 bg-secondary/10">
+      <div className="container px-4">
+        <h2 className="text-3xl font-bold tracking-tighter text-center mb-8 text-gradient glow">Health Categories</h2>
+        <div className="grid gap-6 md:grid-cols-3">
           {categories.map((category) => (
             <Card key={category.title} className="card-gradient neon-border relative group hover:shadow-lg transition-all card-glow hover-lift">
               <div className={`absolute inset-x-0 h-1 top-0 bg-${category.color} rounded-t-lg`} />
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <CardTitle className="text-gradient">{category.title}</CardTitle>
                 <div className="text-sm font-medium text-primary/80">Score Range: {category.score}</div>
                 <CardDescription className="text-purple-200/70">{category.description}</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 <ul className="space-y-2">
                   {category.examples.map((example, index) => (
                     <li key={index} className="text-sm text-purple-200/60 flex items-center">
