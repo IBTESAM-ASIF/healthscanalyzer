@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { Configuration, OpenAIApi } from "https://esm.sh/openai@3.2.1";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -16,35 +16,42 @@ if (!supabaseUrl) throw new Error('Missing Supabase URL');
 if (!supabaseServiceRoleKey) throw new Error('Missing Supabase service role key');
 
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
-const openai = new OpenAIApi(new Configuration({ apiKey: openAIApiKey }));
 
 async function searchProducts() {
   console.log(`[${new Date().toISOString()}] Starting product search phase...`);
   
   try {
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `You are a product research expert. Search for 2 unique consumer products that need health analysis. 
-          Include both common items and specialized products. Format as JSON array with fields:
-          - name
-          - description
-          - category (preliminary: healthy/restricted/harmful)
-          - known_ingredients
-          - amazon_url (hypothetical)
-          - potential_risks
-          - initial_safety_concerns`
-        }
-      ]
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a product research expert. Search for 2 unique consumer products that need health analysis. 
+            Include both common items and specialized products. Format as JSON array with fields:
+            - name
+            - description
+            - category (preliminary: healthy/restricted/harmful)
+            - known_ingredients
+            - amazon_url (hypothetical)
+            - potential_risks
+            - initial_safety_concerns`
+          }
+        ]
+      })
     });
 
-    if (!completion.data.choices[0].message?.content) {
+    const data = await response.json();
+    if (!data.choices?.[0]?.message?.content) {
       throw new Error('No content received from OpenAI');
     }
 
-    const products = JSON.parse(completion.data.choices[0].message.content);
+    const products = JSON.parse(data.choices[0].message.content);
     console.log(`[${new Date().toISOString()}] Found ${products.length} products to analyze`);
     return products;
   } catch (error) {
@@ -57,36 +64,44 @@ async function analyzeProduct(product: any) {
   console.log(`[${new Date().toISOString()}] Starting deep analysis for: ${product.name}`);
   
   try {
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: `You are a product safety expert. Analyze this product thoroughly and provide:
-            1. Detailed health score (0-100)
-            2. Final category determination (healthy/restricted/harmful)
-            3. Comprehensive analysis summary
-            4. Evidence-based pros and cons
-            5. Safety considerations including:
-               - Allergy risks
-               - Drug interactions
-               - Population-specific warnings
-               - Environmental impact
-               - Safety incidents
-            Format as detailed JSON.`
-        },
-        {
-          role: "user",
-          content: `Analyze this product with all available information: ${JSON.stringify(product)}`
-        }
-      ]
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a product safety expert. Analyze this product thoroughly and provide:
+              1. Detailed health score (0-100)
+              2. Final category determination (healthy/restricted/harmful)
+              3. Comprehensive analysis summary
+              4. Evidence-based pros and cons
+              5. Safety considerations including:
+                 - Allergy risks
+                 - Drug interactions
+                 - Population-specific warnings
+                 - Environmental impact
+                 - Safety incidents
+              Format as detailed JSON.`
+          },
+          {
+            role: "user",
+            content: `Analyze this product with all available information: ${JSON.stringify(product)}`
+          }
+        ]
+      })
     });
 
-    if (!completion.data.choices[0].message?.content) {
+    const data = await response.json();
+    if (!data.choices?.[0]?.message?.content) {
       throw new Error('No content received from OpenAI');
     }
 
-    const analysis = JSON.parse(completion.data.choices[0].message.content);
+    const analysis = JSON.parse(data.choices[0].message.content);
     console.log(`[${new Date().toISOString()}] Completed deep analysis for: ${product.name}`);
     return analysis;
   } catch (error) {
@@ -140,16 +155,16 @@ serve(async (req) => {
     const cycleStartTime = new Date();
     console.log(`[${cycleStartTime.toISOString()}] Starting analysis cycle`);
     
-    // Phase 1: Product Search (0-4 minutes)
+    // Phase 1: Product Search
     console.log(`[${new Date().toISOString()}] Starting Phase 1: Product Search`);
     const products = await searchProducts();
     
-    // Phase 2: Deep Analysis (5-9 minutes)
+    // Phase 2: Deep Analysis
     console.log(`[${new Date().toISOString()}] Starting Phase 2: Deep Analysis`);
     const analysisPromises = products.map(product => analyzeProduct(product));
     const analyses = await Promise.all(analysisPromises);
     
-    // Phase 3: Database Upload (minute 10)
+    // Phase 3: Database Upload
     console.log(`[${new Date().toISOString()}] Starting Phase 3: Database Upload`);
     for (let i = 0; i < products.length; i++) {
       await uploadToDatabase(products[i], analyses[i]);
