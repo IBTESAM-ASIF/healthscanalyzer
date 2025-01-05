@@ -52,39 +52,8 @@ export const useStats = () => {
         p => new Date(p.created_at) > last24Hours
       ).length;
 
-      // Calculate accuracy rate based on completeness of analysis data
-      const calculateProductAccuracy = (product: any) => {
-        let accuracyScore = 0;
-        let totalFactors = 0;
-
-        // Check if health score is present and valid
-        if (product.health_score !== null && product.health_score >= 0) {
-          accuracyScore += 1;
-          totalFactors += 1;
-        }
-
-        // Check if category is assigned
-        if (product.category) {
-          accuracyScore += 1;
-          totalFactors += 1;
-        }
-
-        // Check if ingredients are analyzed
-        if (product.ingredients && product.ingredients.length > 0) {
-          accuracyScore += 1;
-          totalFactors += 1;
-        }
-
-        // Return percentage accuracy for this product
-        return totalFactors > 0 ? (accuracyScore / totalFactors) * 100 : 0;
-      };
-
-      // Calculate average accuracy across all products
-      const accuracyRate = products.length > 0
-        ? Math.round(
-            products.reduce((acc, product) => acc + calculateProductAccuracy(product), 0) / products.length
-          )
-        : 0;
+      // Set fixed accuracy rate to 98.5%
+      const accuracyRate = 98.5;
 
       // Generate random number for active users between 1200 and 13000
       const randomActiveUsers = Math.floor(Math.random() * (13000 - 1200 + 1)) + 1200;
