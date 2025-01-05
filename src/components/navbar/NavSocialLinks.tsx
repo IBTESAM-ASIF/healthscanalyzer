@@ -1,17 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Instagram, Linkedin, Twitter, MessageCircle } from "lucide-react";
+import { Twitter, MessageCircle } from "lucide-react";
 
 export const socialLinks = [
-  { 
-    icon: Instagram, 
-    label: "Instagram",
-    url: "https://instagram.com/healthscanalyzer"
-  },
-  { 
-    icon: Linkedin, 
-    label: "LinkedIn",
-    url: "https://linkedin.com/company/healthscanalyzer"
-  },
   { 
     icon: Twitter, 
     label: "Twitter",
