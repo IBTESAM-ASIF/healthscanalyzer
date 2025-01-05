@@ -5,7 +5,7 @@ export const socialLinks = [
   { 
     icon: Twitter, 
     label: "Twitter",
-    url: "https://twitter.com/healthscanalyzer"
+    url: "https://x.com/HealthScan_AI"
   },
   { 
     icon: MessageCircle, 
