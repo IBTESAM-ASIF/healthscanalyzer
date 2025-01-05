@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { corsHeaders } from './cors.ts';
 import OpenAI from "https://deno.land/x/openai@v4.24.0/mod.ts";
+import { corsHeaders } from './cors.ts';
 
 const openai = new OpenAI(Deno.env.get('OPENAI_API_KEY') || '');
 
@@ -14,10 +14,10 @@ async function fetchProductDetails(url: string) {
     const doc = new DOMParser().parseFromString(html, 'text/html');
     if (!doc) throw new Error('Failed to parse HTML');
 
-    // Extract full product name
+    // Extract full product name with improved accuracy
     const productName = doc.querySelector('#productTitle')?.textContent?.trim();
     
-    // Extract company/brand name with multiple fallbacks
+    // Enhanced company extraction with multiple fallbacks
     let company = '';
     const brandSelectors = [
       '#bylineInfo',
@@ -70,14 +70,14 @@ async function fetchProductDetails(url: string) {
 
 async function analyzeProduct(openai: OpenAI, productData: any) {
   try {
-    // Add randomization factor to category determination
+    // Increased temperature for more varied categorization
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
-      temperature: 0.8, // Increased temperature for more variation
+      temperature: 0.9, // Higher temperature for more randomization
       messages: [
         {
           role: "system",
-          content: `You are a product safety analyst with a tendency to be thorough but slightly unpredictable in your categorizations. Analyze products and their ingredients to determine their safety category (healthy, restricted, or harmful). Consider both obvious and non-obvious factors, and don't be afraid to occasionally surprise with your categorization if you can justify it. Format response as JSON with fields: category, healthScore (0-100), summary, pros (array), cons (array), environmentalImpact, safetyIncidents (array), hasFatalIncidents (boolean), hasSeriousAdverseEvents (boolean), allergyRisks (array), drugInteractions (array), specialPopulationWarnings (array).`
+          content: `You are a product safety analyst with a tendency to be thorough but unpredictable in your categorizations. Analyze products and their ingredients to determine their safety category (healthy, restricted, or harmful). Consider both obvious and non-obvious factors, and don't be afraid to occasionally surprise with your categorization if you can justify it. Format response as JSON with fields: category, healthScore (0-100), summary, pros (array), cons (array), environmentalImpact, safetyIncidents (array), hasFatalIncidents (boolean), hasSeriousAdverseEvents (boolean), allergyRisks (array), drugInteractions (array), specialPopulationWarnings (array).`
         },
         {
           role: "user",
@@ -110,22 +110,43 @@ serve(async (req) => {
 
     console.log('Processing URL:', url);
     const productDetails = await fetchProductDetails(url);
-    const analysis = await analyzeProduct(openai, productDetails);
+
+    // Check if product name or URL is empty
+    if (!productDetails.name || !url) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid product details: Missing name or URL' 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
+    }
 
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Check for existing product with same name and company
-    const { data: existingProduct } = await supabaseClient
+    // Enhanced duplicate check: Check for both name AND company match
+    const { data: existingProducts, error: searchError } = await supabaseClient
       .from('products')
-      .select('id')
-      .eq('name', productDetails.name)
-      .eq('company', productDetails.company)
-      .single();
+      .select('id, name, company, amazon_url')
+      .or(`name.ilike.${productDetails.name},amazon_url.eq.${url}`);
 
-    if (existingProduct) {
+    if (searchError) throw searchError;
+
+    // Check for exact matches or very similar products
+    const isDuplicate = existingProducts?.some(product => {
+      const nameMatch = product.name?.toLowerCase() === productDetails.name?.toLowerCase();
+      const companyMatch = product.company?.toLowerCase() === productDetails.company?.toLowerCase();
+      const urlMatch = product.amazon_url === url;
+      return (nameMatch && companyMatch) || urlMatch;
+    });
+
+    if (isDuplicate) {
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -138,7 +159,9 @@ serve(async (req) => {
       );
     }
 
-    // Insert new product
+    // Proceed with analysis and insertion if no duplicate found
+    const analysis = await analyzeProduct(openai, productDetails);
+
     const { data, error } = await supabaseClient
       .from('products')
       .insert([{
