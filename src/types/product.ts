@@ -1,9 +1,11 @@
+export type ProductCategory = 'healthy' | 'restricted' | 'harmful';
+
 export interface Product {
   id: string;
   name: string;
   amazon_url?: string;
   ingredients?: string[];
-  category?: 'healthy' | 'restricted' | 'harmful';
+  category?: ProductCategory;
   health_score?: number;
   analysis_date?: string;
   analysis_summary?: string;

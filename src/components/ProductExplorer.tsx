@@ -12,7 +12,7 @@ import { useToast } from './ui/use-toast';
 import _ from 'lodash';
 
 const ProductExplorer = () => {
-  const [activeCategory, setActiveCategory] = useState('healthy');
+  const [activeCategory, setActiveCategory] = useState<ProductCategory>('healthy');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const { products, loading, totalItems, fetchProducts } = useProductSearch();

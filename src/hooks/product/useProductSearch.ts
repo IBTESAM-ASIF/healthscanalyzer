@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Product } from '@/types/product';
+import { Product, ProductCategory } from '@/types/product';
 import { placeholderProducts } from '@/components/product/placeholderData';
 import _ from 'lodash';
 import { ITEMS_PER_PAGE, getPaginatedData } from '@/utils/pagination';
@@ -14,7 +14,7 @@ export const useProductSearch = () => {
 
   const fetchProducts = useCallback(async (
     searchQuery: string,
-    activeCategory: string,
+    activeCategory: ProductCategory,
     currentPage: number
   ) => {
     try {
@@ -54,17 +54,19 @@ export const useProductSearch = () => {
           )
           .map(product => ({
             ...product,
-            created_at: new Date().toISOString() // Add missing created_at field
+            created_at: new Date().toISOString(),
+            category: product.category as ProductCategory
           }));
 
           const sortedPlaceholders = _.orderBy(allPlaceholders, ['created_at'], ['desc']);
           setProducts(getPaginatedData(sortedPlaceholders, currentPage));
           setTotalItems(allPlaceholders.length);
         } else {
-          const categoryProducts = (placeholderProducts[activeCategory] || [])
+          const categoryProducts = (placeholderProducts[activeCategory as keyof typeof placeholderProducts] || [])
             .map(product => ({
               ...product,
-              created_at: new Date().toISOString() // Add missing created_at field
+              created_at: new Date().toISOString(),
+              category: product.category as ProductCategory
             }));
           const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
           setProducts(getPaginatedData(sortedCategoryProducts, currentPage));
