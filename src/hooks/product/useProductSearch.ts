@@ -45,17 +45,27 @@ export const useProductSearch = () => {
             ...placeholderProducts.healthy,
             ...placeholderProducts.restricted,
             ...placeholderProducts.harmful
-          ].filter(product => 
+          ]
+          .filter(product => 
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             product.ingredients.some(ing => 
               ing.toLowerCase().includes(searchQuery.toLowerCase())
             )
-          );
+          )
+          .map(product => ({
+            ...product,
+            created_at: new Date().toISOString() // Add missing created_at field
+          }));
+
           const sortedPlaceholders = _.orderBy(allPlaceholders, ['created_at'], ['desc']);
           setProducts(getPaginatedData(sortedPlaceholders, currentPage));
           setTotalItems(allPlaceholders.length);
         } else {
-          const categoryProducts = placeholderProducts[activeCategory] || [];
+          const categoryProducts = (placeholderProducts[activeCategory] || [])
+            .map(product => ({
+              ...product,
+              created_at: new Date().toISOString() // Add missing created_at field
+            }));
           const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
           setProducts(getPaginatedData(sortedCategoryProducts, currentPage));
           setTotalItems(categoryProducts.length);
