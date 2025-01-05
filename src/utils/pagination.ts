@@ -1,4 +1,4 @@
-export const ITEMS_PER_PAGE = 9;
+export const ITEMS_PER_PAGE = 6;
 
 export const getPaginatedData = <T>(items: T[], currentPage: number): T[] => {
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

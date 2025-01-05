@@ -50,11 +50,13 @@ const ProductExplorer = () => {
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             product.ingredients.some(ing => ing.toLowerCase().includes(searchQuery.toLowerCase()))
           );
-          setProducts(getPaginatedData(allPlaceholders, currentPage));
+          const sortedPlaceholders = _.orderBy(allPlaceholders, ['created_at'], ['desc']);
+          setProducts(getPaginatedData(sortedPlaceholders, currentPage));
           setTotalItems(allPlaceholders.length);
         } else {
           const categoryProducts = placeholderProducts[activeCategory] || [];
-          setProducts(getPaginatedData(categoryProducts, currentPage));
+          const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
+          setProducts(getPaginatedData(sortedCategoryProducts, currentPage));
           setTotalItems(categoryProducts.length);
         }
       } else {

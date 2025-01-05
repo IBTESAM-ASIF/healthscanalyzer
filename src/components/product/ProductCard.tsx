@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { HealthScore } from './card/HealthScore';
 import { AIAnalysis } from './card/AIAnalysis';
 import { ProsConsSection } from './card/ProsConsSection';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface ProductCardProps {
   product: {
@@ -68,15 +69,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div className="flex items-start justify-between">
-              <h3 className="text-xl font-semibold text-white">{product.name}</h3>
-              <Badge className={`${categoryColors[product.category]} text-white shadow-lg`}>
+              <ScrollArea className="h-[60px] w-full pr-4">
+                <h3 className="text-xl font-semibold text-white">{product.name}</h3>
+              </ScrollArea>
+              <Badge className={`${categoryColors[product.category]} text-white shadow-lg flex-shrink-0 ml-2`}>
                 {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
               </Badge>
             </div>
             {product.company && (
               <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Building2 className="w-4 h-4" />
-                <span>{product.company}</span>
+                <Building2 className="w-4 h-4 flex-shrink-0" />
+                <ScrollArea className="h-[24px] w-full">
+                  <span>{product.company}</span>
+                </ScrollArea>
               </div>
             )}
           </div>
@@ -88,7 +93,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
           {product.analysis_summary && (
             <div className="bg-gray-900/40 p-4 rounded-lg border border-gray-800">
-              <p className="text-gray-300 text-sm leading-relaxed">{product.analysis_summary}</p>
+              <ScrollArea className="h-[80px]">
+                <p className="text-gray-300 text-sm leading-relaxed">{product.analysis_summary}</p>
+              </ScrollArea>
             </div>
           )}
 
@@ -102,11 +109,13 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                 Critical Safety Warnings
               </h4>
               {product.safety_incidents && product.safety_incidents.length > 0 && (
-                <ul className="text-xs text-red-300 list-disc list-inside space-y-1">
-                  {product.safety_incidents.map((incident, index) => (
-                    <li key={index}>{incident}</li>
-                  ))}
-                </ul>
+                <ScrollArea className="h-[80px]">
+                  <ul className="text-xs text-red-300 list-disc list-inside space-y-1">
+                    {product.safety_incidents.map((incident, index) => (
+                      <li key={index}>{incident}</li>
+                    ))}
+                  </ul>
+                </ScrollArea>
               )}
             </div>
           )}
@@ -121,25 +130,29 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               {product.allergy_risks && product.allergy_risks.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-amber-300">Allergy Risks:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {product.allergy_risks.map((risk, index) => (
-                      <Badge key={index} variant="outline" className="text-xs bg-amber-950/50">
-                        {risk}
-                      </Badge>
-                    ))}
-                  </div>
+                  <ScrollArea className="h-[60px]">
+                    <div className="flex flex-wrap gap-1">
+                      {product.allergy_risks.map((risk, index) => (
+                        <Badge key={index} variant="outline" className="text-xs bg-amber-950/50">
+                          {risk}
+                        </Badge>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </div>
               )}
               {product.drug_interactions && product.drug_interactions.length > 0 && (
                 <div className="space-y-2">
                   <p className="text-xs text-amber-300">Drug Interactions:</p>
-                  <div className="flex flex-wrap gap-1">
-                    {product.drug_interactions.map((interaction, index) => (
-                      <Badge key={index} variant="outline" className="text-xs bg-amber-950/50">
-                        {interaction}
-                      </Badge>
-                    ))}
-                  </div>
+                  <ScrollArea className="h-[60px]">
+                    <div className="flex flex-wrap gap-1">
+                      {product.drug_interactions.map((interaction, index) => (
+                        <Badge key={index} variant="outline" className="text-xs bg-amber-950/50">
+                          {interaction}
+                        </Badge>
+                      ))}
+                    </div>
+                  </ScrollArea>
                 </div>
               )}
             </div>
@@ -149,7 +162,9 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           {product.environmental_impact && (
             <div className="flex items-start gap-2 bg-emerald-900/20 p-4 rounded-lg border border-emerald-500/20">
               <Leaf className="w-4 h-4 text-emerald-400 mt-1 flex-shrink-0" />
-              <p className="text-sm text-emerald-300">{product.environmental_impact}</p>
+              <ScrollArea className="h-[60px]">
+                <p className="text-sm text-emerald-300">{product.environmental_impact}</p>
+              </ScrollArea>
             </div>
           )}
         </div>
