@@ -10,7 +10,7 @@ export const socialLinks = [
   { 
     icon: MessageCircle, 
     label: "Telegram",
-    url: "https://t.me/healthscanalyzer"
+    url: "https://t.me/AIHEALTHSCANALYZER"
   }
 ];
 
