@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { ProductCard } from './product/ProductCard';
 import { ProductList } from './product/ProductList';
@@ -6,80 +6,21 @@ import { SearchBar } from './product/SearchBar';
 import { CategoryTabs } from './product/CategoryTabs';
 import { Pagination } from './product/Pagination';
 import { motion } from 'framer-motion';
-import { ITEMS_PER_PAGE, getPaginatedData, getTotalPages } from '@/utils/pagination';
-import { placeholderProducts } from './product/placeholderData';
+import { getTotalPages } from '@/utils/pagination';
+import { useProductSearch } from '@/hooks/product/useProductSearch';
 import { useToast } from './ui/use-toast';
 import _ from 'lodash';
 
 const ProductExplorer = () => {
   const [activeCategory, setActiveCategory] = useState('healthy');
   const [searchQuery, setSearchQuery] = useState('');
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
+  const { products, loading, totalItems, fetchProducts } = useProductSearch();
   const { toast } = useToast();
 
-  const fetchProducts = useCallback(async () => {
-    try {
-      setLoading(true);
-      let query = supabase
-        .from('products')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
-
-      if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      } else if (activeCategory !== 'all') {
-        query = query.eq('category', activeCategory);
-      }
-
-      query = query.range((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE - 1);
-
-      const { data, error, count } = await query;
-      
-      if (error) throw error;
-      
-      if (!data || data.length === 0) {
-        if (searchQuery) {
-          const allPlaceholders = [
-            ...placeholderProducts.healthy,
-            ...placeholderProducts.restricted,
-            ...placeholderProducts.harmful
-          ].filter(product => 
-            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.ingredients.some(ing => ing.toLowerCase().includes(searchQuery.toLowerCase()))
-          );
-          const sortedPlaceholders = _.orderBy(allPlaceholders, ['created_at'], ['desc']);
-          setProducts(getPaginatedData(sortedPlaceholders, currentPage));
-          setTotalItems(allPlaceholders.length);
-        } else {
-          const categoryProducts = placeholderProducts[activeCategory] || [];
-          const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
-          setProducts(getPaginatedData(sortedCategoryProducts, currentPage));
-          setTotalItems(categoryProducts.length);
-        }
-      } else {
-        setProducts(data);
-        setTotalItems(count || 0);
-      }
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch products. Please try again later.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [activeCategory, searchQuery, currentPage]);
-
   useEffect(() => {
-    fetchProducts();
-    setCurrentPage(1);
+    fetchProducts(searchQuery, activeCategory, currentPage);
 
-    // Debounced real-time updates
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -90,7 +31,7 @@ const ProductExplorer = () => {
           table: 'products'
         },
         _.debounce(() => {
-          fetchProducts();
+          fetchProducts(searchQuery, activeCategory, currentPage);
           toast({
             title: "Products Updated",
             description: "New product analysis data available.",
@@ -102,7 +43,7 @@ const ProductExplorer = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeCategory, searchQuery]);
+  }, [activeCategory, searchQuery, currentPage]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
