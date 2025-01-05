@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { getTotalPages } from '@/utils/pagination';
 import { useProductSearch } from '@/hooks/product/useProductSearch';
 import { useToast } from './ui/use-toast';
+import { ProductCategory } from '@/types/product';
 import _ from 'lodash';
 
 const ProductExplorer = () => {

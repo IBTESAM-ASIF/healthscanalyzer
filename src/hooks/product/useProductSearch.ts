@@ -26,7 +26,7 @@ export const useProductSearch = () => {
 
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
-      } else if (activeCategory !== 'all') {
+      } else {
         query = query.eq('category', activeCategory);
       }
 
