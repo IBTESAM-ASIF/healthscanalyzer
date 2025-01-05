@@ -45,35 +45,24 @@ export const useStats = () => {
         ? (products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0) / totalAnalyzed).toFixed(6)
         : '0.000000';
 
+      // Updated: Calculate top performers (products with health score > 93)
       const topPerformers = products.filter(p => (p.health_score || 0) > 93).length;
 
+      // Calculate daily scans (products analyzed in the last 24 hours)
       const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const dailyScans = products.filter(
         p => new Date(p.created_at) > last24Hours
       ).length;
 
-      // Calculate average accuracy rate based on health scores and analysis completeness
-      const accuracyRate = products.length > 0
-        ? Math.round(
-            products.reduce((acc, product) => {
-              // Base accuracy on health score presence and completeness
-              const hasHealthScore = product.health_score !== null;
-              const hasCategory = product.category !== null;
-              const hasIngredients = Array.isArray(product.ingredients) && product.ingredients.length > 0;
-              
-              // Calculate individual product accuracy
-              let productAccuracy = 0;
-              if (hasHealthScore) productAccuracy += 40; // Health score weight
-              if (hasCategory) productAccuracy += 30;    // Category weight
-              if (hasIngredients) productAccuracy += 30; // Ingredients weight
-              
-              return acc + productAccuracy;
-            }, 0) / products.length
-          )
-        : 0;
+      // Calculate accuracy rate (assuming products with health score are accurately analyzed)
+      const accuracyRate = Math.round(
+        (products.filter(p => p.health_score !== null).length / totalAnalyzed) * 100
+      );
 
+      // Generate random number for active users between 1200 and 13000
       const randomActiveUsers = Math.floor(Math.random() * (13000 - 1200 + 1)) + 1200;
 
+      // Count total ingredients across all products
       const totalIngredients = products.reduce((acc, product) => {
         return acc + (product.ingredients?.length || 0);
       }, 0);
