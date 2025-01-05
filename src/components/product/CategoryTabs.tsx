@@ -1,30 +1,31 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart, AlertTriangle, ShieldAlert } from 'lucide-react';
+import { ProductCategory } from '@/types/product';
 
 interface CategoryTabsProps {
-  activeCategory: string;
-  setActiveCategory: (category: string) => void;
+  activeCategory: ProductCategory;
+  setActiveCategory: (category: ProductCategory) => void;
 }
 
 export const CategoryTabs = ({ activeCategory, setActiveCategory }: CategoryTabsProps) => {
   const categories = [
     { 
-      id: 'healthy', 
+      id: 'healthy' as ProductCategory, 
       label: 'Healthy Products',
       icon: Heart,
       color: 'emerald',
       description: 'Safe and beneficial products'
     },
     { 
-      id: 'restricted', 
+      id: 'restricted' as ProductCategory, 
       label: 'Restricted Use',
       icon: ShieldAlert,
       color: 'amber',
       description: 'Use with caution'
     },
     { 
-      id: 'harmful', 
+      id: 'harmful' as ProductCategory, 
       label: 'Harmful Products',
       icon: AlertTriangle,
       color: 'red',
