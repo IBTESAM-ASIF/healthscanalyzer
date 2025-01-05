@@ -67,8 +67,9 @@ export const Mission = () => {
             {...fadeInUp}
             className="text-lg md:text-xl text-purple-200/70 leading-relaxed max-w-3xl mx-auto"
           >
-            We believe in the power of informed decisions. Our mission is to leverage cutting-edge AI technology 
-            to analyze food products at scale, making complex ingredient lists accessible and understandable for everyone.
+            We harness state-of-the-art GPT-4 and advanced machine learning technologies to revolutionize food analysis. 
+            Our mission is to provide real-time, comprehensive ingredient analysis powered by the latest AI advancements, 
+            making complex nutritional information instantly accessible and actionable.
           </motion.p>
         </div>
 
