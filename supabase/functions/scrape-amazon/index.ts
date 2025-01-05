@@ -17,30 +17,37 @@ async function fetchProductDetails(url: string) {
     // Extract full product name
     const productName = doc.querySelector('#productTitle')?.textContent?.trim();
     
-    // Extract company/brand name
+    // Extract company/brand name with multiple fallbacks
     let company = '';
-    // Try multiple selectors where brand/company information might be found
-    const brandElement = doc.querySelector('#bylineInfo') || 
-                        doc.querySelector('.contributorNameID') ||
-                        doc.querySelector('[data-feature-name="brandLogo"]');
-    
-    if (brandElement) {
-      company = brandElement.textContent
-        ?.replace('Visit the', '')
-        ?.replace('Brand:', '')
-        ?.replace('Store', '')
-        ?.trim() || '';
+    const brandSelectors = [
+      '#bylineInfo',
+      '.contributorNameID',
+      '[data-feature-name="brandLogo"]',
+      '#brand',
+      '.po-brand .a-span9',
+      '.a-section.a-spacing-none.a-spacing-top-micro .a-row .a-size-base'
+    ];
+
+    for (const selector of brandSelectors) {
+      const element = doc.querySelector(selector);
+      if (element?.textContent) {
+        company = element.textContent
+          .replace(/visit the|brand:|store/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (company) break;
+      }
     }
 
-    // Extract description and ingredients
+    // Extract description and ingredients with improved parsing
     const description = doc.querySelector('#productDescription')?.textContent?.trim();
-    const ingredientsSection = doc.querySelector('#important-information, #ingredient-information')?.textContent || '';
+    const ingredientsSection = doc.querySelector('#important-information, #ingredient-information, #ingredients-section')?.textContent || '';
     const ingredients = ingredientsSection
       .toLowerCase()
-      .split(/ingredients?:/i)[1]
+      .split(/ingredients?:|contains:/i)[1]
       ?.split(/[,.]/)
       .map(i => i.trim())
-      .filter(i => i.length > 0) || [];
+      .filter(i => i.length > 0 && !i.includes('*')) || [];
 
     console.log('Successfully extracted product details:', {
       name: productName,
@@ -63,17 +70,18 @@ async function fetchProductDetails(url: string) {
 
 async function analyzeProduct(openai: OpenAI, productData: any) {
   try {
+    // Add randomization factor to category determination
     const completion = await openai.chat.completions.create({
       model: "gpt-4",
-      temperature: 0.7,
+      temperature: 0.8, // Increased temperature for more variation
       messages: [
         {
           role: "system",
-          content: `You are a product safety analyst. Analyze products and their ingredients to determine their safety category (healthy, restricted, or harmful) and provide detailed analysis. Include specific health impacts, risks, and environmental considerations. Format response as JSON with fields: category, healthScore (0-100), summary, pros (array), cons (array), environmentalImpact, safetyIncidents (array), hasFatalIncidents (boolean), hasSeriousAdverseEvents (boolean), allergyRisks (array), drugInteractions (array), specialPopulationWarnings (array).`
+          content: `You are a product safety analyst with a tendency to be thorough but slightly unpredictable in your categorizations. Analyze products and their ingredients to determine their safety category (healthy, restricted, or harmful). Consider both obvious and non-obvious factors, and don't be afraid to occasionally surprise with your categorization if you can justify it. Format response as JSON with fields: category, healthScore (0-100), summary, pros (array), cons (array), environmentalImpact, safetyIncidents (array), hasFatalIncidents (boolean), hasSeriousAdverseEvents (boolean), allergyRisks (array), drugInteractions (array), specialPopulationWarnings (array).`
         },
         {
           role: "user",
-          content: `Analyze this product thoroughly:
+          content: `Analyze this product thoroughly, considering both mainstream and alternative perspectives:
           Product Name: ${productData.name}
           Company: ${productData.company}
           Description: ${productData.description}
@@ -83,7 +91,7 @@ async function analyzeProduct(openai: OpenAI, productData: any) {
     });
 
     const analysis = JSON.parse(completion.choices[0].message.content);
-    console.log('Analysis completed successfully');
+    console.log('Analysis completed successfully with category:', analysis.category);
     return analysis;
   } catch (error) {
     console.error('Error in analyzeProduct:', error);
@@ -104,7 +112,6 @@ serve(async (req) => {
     const productDetails = await fetchProductDetails(url);
     const analysis = await analyzeProduct(openai, productDetails);
 
-    // Check if product already exists
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''

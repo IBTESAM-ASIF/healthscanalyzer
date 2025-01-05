@@ -67,23 +67,26 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         hover:border-gray-700 transition-all duration-300 hover:shadow-xl
       `}>
         <div className="space-y-6">
+          {/* Product Name Section */}
           <div className="space-y-4">
-            <div className="flex items-start justify-between">
-              <ScrollArea className="h-[60px] w-full pr-4">
-                <h3 className="text-xl font-semibold text-white">{product.name}</h3>
+            <div className="flex flex-col space-y-2">
+              <ScrollArea className="h-[60px] w-full">
+                <h3 className="text-xl font-bold text-white leading-tight">{product.name}</h3>
               </ScrollArea>
-              <Badge className={`${categoryColors[product.category]} text-white shadow-lg flex-shrink-0 ml-2`}>
+              
+              {product.company && (
+                <div className="flex items-center gap-2 text-sm text-gray-400">
+                  <Building2 className="w-4 h-4 flex-shrink-0" />
+                  <ScrollArea className="h-[24px] w-full">
+                    <span className="font-medium">{product.company}</span>
+                  </ScrollArea>
+                </div>
+              )}
+              
+              <Badge className={`${categoryColors[product.category]} text-white shadow-lg self-start`}>
                 {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
               </Badge>
             </div>
-            {product.company && (
-              <div className="flex items-center gap-2 text-sm text-gray-400">
-                <Building2 className="w-4 h-4 flex-shrink-0" />
-                <ScrollArea className="h-[24px] w-full">
-                  <span>{product.company}</span>
-                </ScrollArea>
-              </div>
-            )}
           </div>
 
           <div className="grid gap-4">
