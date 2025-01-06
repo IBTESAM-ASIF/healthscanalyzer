@@ -4,6 +4,7 @@ import { HeroFeatureCard } from "./hero/HeroFeatureCard";
 import { HeroTimer } from "./hero/HeroTimer";
 import { HeroButtons } from "./hero/HeroButtons";
 import { scrollToSection } from "./navbar/NavMenuItems";
+import { Button } from "./ui/button";
 
 export const Hero = () => {
   const handleLearnMore = () => {
@@ -76,10 +77,15 @@ export const Hero = () => {
           >
             <span className="flex items-center gap-2 text-sm font-medium text-purple-200/90">
               <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-              Launching Q1 2025
-              <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-semibold tracking-wide group-hover:bg-primary/30 transition-colors">
-                Coming Soon
-              </span>
+              Get $HEALTH Token
+              <a 
+                href="https://pump.fun/coin/6X7fYP74DFsu3tj5oB4j8okBbLoDevZ2twXp3gNhpump" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-semibold tracking-wide group-hover:bg-primary/30 transition-colors"
+              >
+                Buy Now
+              </a>
             </span>
           </motion.div>
 
