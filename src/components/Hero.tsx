@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { HeroFeatureCard } from "./hero/HeroFeatureCard";
 import { HeroTimer } from "./hero/HeroTimer";
 import { HeroButtons } from "./hero/HeroButtons";
-import { TokenLaunch } from "./TokenLaunch";
 import { scrollToSection } from "./navbar/NavMenuItems";
 
 export const Hero = () => {
@@ -113,9 +112,8 @@ export const Hero = () => {
             <span className="text-blue-400/90 font-medium">real-time insights</span> and{" "}
             <span className="text-green-400/90 font-medium">comprehensive health scores</span>.
           </motion.p>
-          
+
           <HeroButtons onLearnMore={handleLearnMore} onViewProducts={handleViewProducts} />
-          <TokenLaunch />
           <HeroTimer />
 
           <motion.div 
