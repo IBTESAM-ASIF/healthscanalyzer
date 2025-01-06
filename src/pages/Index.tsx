@@ -8,6 +8,7 @@ import ProductExplorer from "@/components/ProductExplorer";
 import { Roadmap } from "@/components/Roadmap";
 import { FAQ } from "@/components/FAQ";
 import { JoinEcosystem } from "@/components/JoinEcosystem";
+import { LogoGenerator } from "@/components/LogoGenerator";
 
 const Index = () => {
   return (
@@ -21,6 +22,7 @@ const Index = () => {
         <HealthAnalysis />
         <ProductHealthAnalysis />
         <ProductExplorer />
+        <LogoGenerator />
         <Roadmap />
         <FAQ />
         <JoinEcosystem />
