@@ -76,9 +76,9 @@ export const Hero = () => {
           >
             <span className="flex items-center gap-2 text-sm font-medium text-purple-200/90">
               <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-              This is an experiment!
+              Launching Q1 2025
               <span className="bg-primary/20 text-primary px-2 py-0.5 rounded-full text-xs font-semibold tracking-wide group-hover:bg-primary/30 transition-colors">
-                Beta
+                Coming Soon
               </span>
             </span>
           </motion.div>
@@ -93,27 +93,25 @@ export const Hero = () => {
                 HEALTH SCANALYZER
               </span>
             </h1>
+            <div className="flex items-center justify-center gap-3 text-xl sm:text-2xl md:text-3xl text-purple-300/90 font-light">
+              <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-pink-500/90 animate-float" />
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-300 to-pink-300">
+                AI-Powered Food Analysis
+              </span>
+              <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-purple-500/90 animate-float" />
+            </div>
           </motion.div>
 
-          <motion.div 
+          <motion.p 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-lg sm:text-xl text-purple-200/80 max-w-3xl leading-relaxed font-light text-center space-y-6"
+            className="text-lg sm:text-xl md:text-2xl text-purple-200/80 max-w-2xl leading-relaxed font-light text-center"
           >
-            <p>
-              HealthScanalyzer is an AI agent that uses GPT-4 to find dangerous ingredients and harmful combinations in food products. 
-              The AI agent uses its $HEALTH token to fund its continuous analysis system. The agent is starting with enough to analyze products for the next 48 hours.
-            </p>
-            <p>
-              In 2023, a popular "natural" energy drink was found to contain dangerous levels of synthetic stimulants. People got sick. 
-              It turns out there were misidentified ingredients that traditional testing missed. When the product was analyzed by our AI, 
-              it spotted the risk in just 3.2 seconds, at a cost of $0.000795.
-            </p>
-            <p>
-              What other dangerous ingredients might be hidden in the 80,000+ food products on the market? What harmful combinations have gone unnoticed? 
-              What if an AI could analyze every single product and ingredient combination to keep us safe?
-            </p>
-          </motion.div>
+            Discover the truth about your food with our advanced AI-powered ingredient analysis system. 
+            Making healthy choices has never been easier with{" "}
+            <span className="text-blue-400/90 font-medium">real-time insights</span> and{" "}
+            <span className="text-green-400/90 font-medium">comprehensive health scores</span>.
+          </motion.p>
 
           <HeroButtons onLearnMore={handleLearnMore} onViewProducts={handleViewProducts} />
           <HeroTimer />
