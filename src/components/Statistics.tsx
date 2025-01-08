@@ -1,7 +1,12 @@
 import { StatsGrid } from './stats/StatsGrid';
 import { StatsHeader } from './stats/StatsHeader';
 import { useStats } from '@/hooks/stats/useStats';
-import { Pagination } from './ui/pagination';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+} from '@/components/ui/pagination';
 
 const Statistics = () => {
   const { stats, isLoading, currentPage, setCurrentPage, totalPages } = useStats();
@@ -16,10 +21,10 @@ const Statistics = () => {
         {totalPages > 1 && (
           <div className="mt-8 flex justify-center">
             <Pagination>
-              <Pagination.Content>
+              <PaginationContent>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Pagination.Item key={page}>
-                    <Pagination.Link
+                  <PaginationItem key={page}>
+                    <PaginationLink
                       href="#"
                       onClick={(e) => {
                         e.preventDefault();
@@ -28,10 +33,10 @@ const Statistics = () => {
                       isActive={currentPage === page}
                     >
                       {page}
-                    </Pagination.Link>
-                  </Pagination.Item>
+                    </PaginationLink>
+                  </PaginationItem>
                 ))}
-              </Pagination.Content>
+              </PaginationContent>
             </Pagination>
           </div>
         )}

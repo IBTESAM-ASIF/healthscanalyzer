@@ -39,7 +39,7 @@ export const useStats = () => {
     queryFn: () => fetchProducts(currentPage),
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
-    keepPreviousData: true, // Keep previous page data while fetching next page
+    placeholderData: (previousData) => previousData, // This replaces keepPreviousData
   });
 
   const products = data?.products || [];
