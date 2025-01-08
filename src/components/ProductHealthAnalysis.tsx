@@ -2,10 +2,10 @@ import React from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from '@tanstack/react-query';
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ProductHealthChart } from './product-health/ProductHealthChart';
 import { CategoryDescriptions } from './product-health/CategoryDescriptions';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, DatabaseIcon } from 'lucide-react';
 
 const ProductHealthAnalysis = () => {
   const { toast } = useToast();
@@ -21,6 +21,13 @@ const ProductHealthAnalysis = () => {
         endDate: endDate.toISOString()
       });
 
+      // First check auth status
+      const { data: session, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw new Error('Authentication service unavailable. Please try again later.');
+      }
+
       const { data: products, error } = await supabase
         .from('products')
         .select('category, created_at')
@@ -29,6 +36,9 @@ const ProductHealthAnalysis = () => {
 
       if (error) {
         console.error('Supabase query error:', error);
+        if (error.message?.includes('JWT')) {
+          throw new Error('Authentication error. Please sign in again.');
+        }
         throw new Error(
           error.message === 'Failed to fetch' 
             ? 'Unable to connect to the database. Please check your connection and try again.'
@@ -106,11 +116,24 @@ const ProductHealthAnalysis = () => {
   }, [toast]);
 
   if (isError && error instanceof Error) {
+    const isAuthError = error.message.includes('Authentication') || error.message.includes('JWT');
+    
     return (
       <Alert variant="destructive" className="m-4">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
+        <AlertTitle>{isAuthError ? 'Authentication Error' : 'Connection Error'}</AlertTitle>
+        <AlertDescription className="mt-2">
           {error.message || 'Failed to fetch analysis data. Please try again later.'}
+          {isAuthError && (
+            <div className="mt-2">
+              <button 
+                onClick={() => window.location.reload()} 
+                className="text-white underline hover:no-underline"
+              >
+                Refresh page
+              </button>
+            </div>
+          )}
         </AlertDescription>
       </Alert>
     );
