@@ -10,6 +10,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
+    storage: localStorage,
+    storageKey: 'supabase.auth.token',
   },
   global: {
     headers: {
@@ -24,9 +26,10 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
   }
 });
 
-// Add error logging for debugging
+// Add error handling through auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Supabase auth event:', event);
+  
   if (event === 'SIGNED_OUT') {
     console.log('User signed out');
   } else if (event === 'SIGNED_IN') {
@@ -35,14 +38,14 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('Token refreshed successfully');
   } else if (event === 'USER_UPDATED') {
     console.log('User data updated');
-  }
-});
-
-// Handle auth errors globally
-supabase.auth.onError((error) => {
-  console.error('Auth error:', error);
-  if (error.message.includes('JWT')) {
-    console.log('JWT error detected, attempting to refresh session...');
-    supabase.auth.refreshSession();
+  } else if (event === 'INITIAL_SESSION') {
+    console.log('Initial session loaded');
+  } else if (event === 'ERROR') {
+    console.error('Auth error occurred:', session);
+    // Handle JWT errors by attempting to refresh the session
+    if (session?.error?.message?.includes('JWT')) {
+      console.log('JWT error detected, attempting to refresh session...');
+      supabase.auth.refreshSession();
+    }
   }
 });
