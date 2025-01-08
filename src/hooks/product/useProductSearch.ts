@@ -22,7 +22,14 @@ export const useProductSearch = () => {
       setLoading(true);
       console.log('Fetching products with params:', { searchQuery, activeCategory, currentPage, retries });
       
-      // First, get the total count with proper error handling
+      // First verify auth status
+      const { data: authData, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw new Error('Authentication service unavailable');
+      }
+      
+      // Get total count with proper error handling
       let countQuery = supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
@@ -37,6 +44,9 @@ export const useProductSearch = () => {
       
       if (countError) {
         console.error('Count query error:', countError);
+        if (countError.message?.includes('JWT')) {
+          throw new Error('Authentication expired. Please refresh the page.');
+        }
         throw countError;
       }
       
@@ -70,9 +80,14 @@ export const useProductSearch = () => {
           }, 1000);
           return;
         }
+        if (error.message?.includes('JWT')) {
+          throw new Error('Authentication expired. Please refresh the page.');
+        }
         throw error;
       }
 
+      console.log('Data fetched successfully:', data?.length, 'items');
+      
       if (!data || data.length === 0) {
         console.log('No data found, using placeholders');
         if (searchQuery) {
@@ -108,15 +123,14 @@ export const useProductSearch = () => {
           setTotalItems(categoryProducts.length);
         }
       } else {
-        console.log('Data fetched successfully:', data.length, 'items');
         setProducts(data);
         setTotalItems(count || 0);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching products:', error);
       toast({
         title: "Error",
-        description: "Failed to fetch products. Please try again later.",
+        description: error.message || "Failed to fetch products. Please try again later.",
         variant: "destructive",
       });
       setProducts([]);
