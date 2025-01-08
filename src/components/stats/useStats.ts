@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { initialStats } from '@/components/stats/initialStats';
 import { useQuery } from '@tanstack/react-query';
+import { debounce } from 'lodash';
 
 const fetchProducts = async () => {
   console.log('Fetching products for stats calculation...');
@@ -27,7 +28,7 @@ export const useStats = () => {
     queryKey: ['products-stats'],
     queryFn: fetchProducts,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    gcTime: 1000 * 60 * 30, // Cache garbage collection time (formerly cacheTime)
+    gcTime: 1000 * 60 * 30, // Cache garbage collection time
     refetchOnWindowFocus: false,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -114,7 +115,7 @@ export const useStats = () => {
           schema: 'public',
           table: 'products'
         },
-        _.debounce(() => {
+        debounce(() => {
           toast({
             title: "Statistics Updated",
             description: "New data is available.",
