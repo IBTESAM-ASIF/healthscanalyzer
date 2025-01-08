@@ -1,5 +1,11 @@
 import { Product } from '@/types/product';
 
+const formatToSixSignificantFigures = (num: number): string => {
+  if (num === 0) return '0';
+  const significantFigures = 6;
+  return Number(num).toPrecision(significantFigures);
+};
+
 export const calculateStats = (products: Product[]) => {
   if (!products || products.length === 0) {
     return null;
@@ -11,16 +17,16 @@ export const calculateStats = (products: Product[]) => {
   const moderateRisk = products.filter(p => p.category === 'restricted').length;
   
   const avgHealthScore = products.length > 0 
-    ? Math.round(products.reduce((acc, curr) => acc + (curr.health_score || 0), 0) / totalAnalyzed)
+    ? products.reduce((acc, curr) => acc + (curr.health_score || 0), 0) / totalAnalyzed
     : 0;
 
   const highRiskProducts = products.filter(
     p => p.has_fatal_incidents || p.has_serious_adverse_events
   ).length;
 
-  // Calculate exact average analysis cost
+  const totalAnalysisCost = products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0);
   const avgAnalysisCost = products.length > 0
-    ? (products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0) / totalAnalyzed).toFixed(6)
+    ? (totalAnalysisCost / totalAnalyzed).toFixed(6)
     : '0.000000';
 
   const topPerformers = products.filter(p => (p.health_score || 0) > 93).length;
@@ -35,17 +41,17 @@ export const calculateStats = (products: Product[]) => {
   const totalIngredients = products.reduce((acc, product) => acc + (product.ingredients?.length || 0), 0);
 
   return {
-    totalAnalyzed,
-    healthyProducts,
-    harmfulProducts,
-    moderateRisk,
-    avgHealthScore,
-    highRiskProducts,
+    totalAnalyzed: formatToSixSignificantFigures(totalAnalyzed),
+    healthyProducts: formatToSixSignificantFigures(healthyProducts),
+    harmfulProducts: formatToSixSignificantFigures(harmfulProducts),
+    moderateRisk: formatToSixSignificantFigures(moderateRisk),
+    avgHealthScore: formatToSixSignificantFigures(avgHealthScore),
+    highRiskProducts: formatToSixSignificantFigures(highRiskProducts),
     avgAnalysisCost,
-    topPerformers,
-    dailyScans,
-    accuracyRate,
-    randomActiveUsers,
-    totalIngredients
+    topPerformers: formatToSixSignificantFigures(topPerformers),
+    dailyScans: formatToSixSignificantFigures(dailyScans),
+    accuracyRate: formatToSixSignificantFigures(accuracyRate),
+    randomActiveUsers: formatToSixSignificantFigures(randomActiveUsers),
+    totalIngredients: formatToSixSignificantFigures(totalIngredients)
   };
 };

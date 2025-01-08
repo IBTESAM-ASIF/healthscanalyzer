@@ -1,14 +1,15 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useStatsData } from './useStatsData';
-import { calculateStats } from './useStatsCalculation';
-import { useStatsSubscription } from './useStatsSubscription';
+import { debounce } from 'lodash';
+import { initialStats } from '@/components/stats/initialStats';
 import { useAnalysisTrigger } from '@/components/stats/useAnalysisTrigger';
+import { calculateStats } from './useStatsCalculation';
 
 export const useStats = () => {
-  const { stats, setStats, isLoading, setIsLoading } = useStatsData();
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState(initialStats);
   const { triggerInitialAnalysis } = useAnalysisTrigger();
 
   const fetchStats = async () => {
@@ -32,22 +33,6 @@ export const useStats = () => {
         setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
         await triggerInitialAnalysis();
         return;
-      }
-
-      // Log any potentially miscategorized products
-      const potentialIssues = products.filter(p => {
-        const hasWarnings = p.has_fatal_incidents || p.has_serious_adverse_events;
-        const isHealthy = p.category === 'healthy';
-        return hasWarnings && isHealthy;
-      });
-
-      if (potentialIssues.length > 0) {
-        console.warn('Found potentially miscategorized products:', potentialIssues);
-        toast({
-          title: "Warning",
-          description: "Found products marked as healthy but with safety warnings. Please review.",
-          variant: "destructive",
-        });
       }
 
       const calculatedStats = calculateStats(products);
@@ -97,15 +82,35 @@ export const useStats = () => {
     }
   };
 
-  const { subscribeToStats } = useStatsSubscription(fetchStats);
-
   useEffect(() => {
     console.log('Setting up stats subscription...');
     fetchStats();
-    const cleanup = subscribeToStats();
+    
+    const debouncedFetchStats = debounce(() => {
+      fetchStats();
+      toast({
+        title: "Statistics Updated",
+        description: "New product analysis data is available.",
+      });
+    }, 1000);
+
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'products'
+        },
+        debouncedFetchStats
+      )
+      .subscribe();
+
     return () => {
       console.log('Cleaning up stats subscription...');
-      cleanup();
+      debouncedFetchStats.cancel();
+      supabase.removeChannel(channel);
     };
   }, []);
 
