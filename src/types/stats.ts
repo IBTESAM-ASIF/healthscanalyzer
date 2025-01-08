@@ -9,6 +9,8 @@ export interface Stat {
   description: string;
 }
 
+export type StatType = Stat;
+
 export interface StatsGridProps {
   stats: Stat[];
 }

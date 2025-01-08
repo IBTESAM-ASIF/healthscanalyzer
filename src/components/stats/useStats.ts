@@ -30,7 +30,7 @@ export const useStats = () => {
     refetchOnWindowFocus: false,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    cacheTime: 1000 * 60 * 30, // Cache for 30 minutes
+    gcTime: 1000 * 60 * 30, // Cache garbage collection time (formerly cacheTime)
   });
 
   const calculateStats = useCallback(() => {
