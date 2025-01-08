@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, handleSupabaseError } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ProductCategory } from '@/types/product';
 
@@ -43,16 +43,20 @@ export const useProductSearch = () => {
         .order('created_at', { ascending: false })
         .range(offset, offset + itemsPerPage - 1);
 
-      // Log the generated URL for debugging
+      // Log the generated query for debugging
       console.log('Generated Supabase query:', query);
 
-      // Execute query
-      const { data, error, count } = await query;
+      // Execute query with timeout
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout')), 10000);
+      });
 
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      const { data, error, count } = await Promise.race([
+        query,
+        timeoutPromise
+      ]) as any;
+
+      if (error) throw error;
 
       console.log('Products fetched successfully:', {
         count,
@@ -73,19 +77,22 @@ export const useProductSearch = () => {
       });
 
       // Retry logic for network errors
-      if (retryCount < 3 && error.message === "Failed to fetch") {
+      if (retryCount < 3 && (error.message === "Failed to fetch" || error.message === "Request timeout")) {
         console.log(`Retrying fetch attempt ${retryCount + 1}/3...`);
-        setTimeout(() => {
-          fetchProducts(searchQuery, category, page, retryCount + 1);
-        }, 1000 * Math.pow(2, retryCount)); // Exponential backoff
-        return;
+        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
+        return fetchProducts(searchQuery, category, page, retryCount + 1);
       }
 
+      const errorMessage = handleSupabaseError(error);
       toast({
         title: "Error Loading Products",
-        description: "We're having trouble connecting to our servers. Please check your internet connection and try again.",
+        description: errorMessage,
         variant: "destructive",
       });
+
+      // Set empty state on error
+      setProducts([]);
+      setTotalItems(0);
 
     } finally {
       setLoading(false);

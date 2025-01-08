@@ -11,6 +11,7 @@ export const supabase = createClient<Database>(
     auth: {
       autoRefreshToken: true,
       persistSession: true,
+      detectSessionInUrl: true
     },
     global: {
       headers: {
@@ -19,5 +20,33 @@ export const supabase = createClient<Database>(
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
       },
     },
+    db: {
+      schema: 'public'
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    }
   }
 );
+
+// Add error handling utility
+export const handleSupabaseError = (error: any) => {
+  console.error('Supabase Error:', {
+    message: error.message,
+    details: error.details,
+    hint: error.hint,
+    code: error.code
+  });
+  
+  if (error.message === "Failed to fetch") {
+    return "Network error. Please check your internet connection.";
+  }
+  
+  if (error.code === "PGRST116") {
+    return "Invalid query parameters. Please try again.";
+  }
+  
+  return "An unexpected error occurred. Please try again later.";
+};
