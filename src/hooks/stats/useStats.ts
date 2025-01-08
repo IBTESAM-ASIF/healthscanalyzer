@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { initialStats } from '@/components/stats/initialStats';
 
 const fetchProducts = async () => {
-  console.log('Initiating products fetch for stats...');
+  console.log('Initiating products fetch for ALL stats...');
   
   try {
     // First verify auth status
@@ -15,6 +15,7 @@ const fetchProducts = async () => {
       throw new Error('Authentication service unavailable');
     }
 
+    // Fetch ALL products without any limit
     const { data: products, error } = await supabase
       .from('products')
       .select('*')
@@ -28,7 +29,7 @@ const fetchProducts = async () => {
       throw new Error(error.message || 'Failed to fetch statistics');
     }
 
-    console.log('Successfully fetched products:', products?.length);
+    console.log('Successfully fetched ALL products:', products?.length);
     return products || [];
   } catch (error) {
     console.error('Error in fetchProducts:', error);
@@ -42,7 +43,7 @@ export const useStats = () => {
   const [retryCount, setRetryCount] = useState(0);
 
   const { data: products, isLoading, error, refetch } = useQuery({
-    queryKey: ['products-stats', retryCount],
+    queryKey: ['all-products-stats', retryCount],
     queryFn: fetchProducts,
     staleTime: 1000 * 30, // Consider data fresh for 30 seconds
     refetchInterval: 1000 * 45, // Refetch every 45 seconds
@@ -57,7 +58,7 @@ export const useStats = () => {
       return;
     }
 
-    console.log('Calculating stats from', products.length, 'products');
+    console.log('Calculating stats from ALL products:', products.length);
 
     // Calculate statistics with precise error handling
     try {
@@ -92,12 +93,13 @@ export const useStats = () => {
         return acc + (Array.isArray(product.ingredients) ? product.ingredients.length : 0);
       }, 0);
 
-      console.log('Stats calculation complete:', {
+      console.log('Stats calculation complete for ALL products:', {
         totalAnalyzed,
         healthyProducts,
         harmfulProducts,
         avgHealthScore,
-        dailyScans
+        dailyScans,
+        totalIngredients
       });
 
       setStats(prev => prev.map(stat => {
@@ -143,7 +145,7 @@ export const useStats = () => {
 
   // Enhanced real-time subscription
   useEffect(() => {
-    console.log('Setting up stats real-time subscription...');
+    console.log('Setting up stats real-time subscription for ALL products...');
     const channel = supabase
       .channel('schema-db-changes')
       .on(
