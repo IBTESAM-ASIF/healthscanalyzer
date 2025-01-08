@@ -29,7 +29,7 @@ export const useProductSearch = () => {
       if (searchQuery) {
         countQuery = countQuery.ilike('name', `%${searchQuery}%`);
       } else {
-        countQuery = countQuery.eq('category', activeCategory);
+        countQuery = countQuery.eq('category', activeCategory as string);
       }
 
       const { count, error: countError } = await countQuery;
@@ -52,7 +52,7 @@ export const useProductSearch = () => {
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
       } else {
-        query = query.eq('category', activeCategory);
+        query = query.eq('category', activeCategory as string);
       }
 
       const from = (validatedPage - 1) * ITEMS_PER_PAGE;

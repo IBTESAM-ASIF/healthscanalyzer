@@ -11,16 +11,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     storageKey: 'supabase.auth.token'
   },
-  headers: {
-    'apikey': supabaseAnonKey,
-    'Authorization': `Bearer ${supabaseAnonKey}`
-  },
-  db: {
-    schema: 'public'
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
+  global: {
+    headers: {
+      'apikey': supabaseAnonKey,
+      'Authorization': `Bearer ${supabaseAnonKey}`
     }
   }
 })
