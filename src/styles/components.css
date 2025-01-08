@@ -1,0 +1,54 @@
+/* Enhanced Grid Background */
+.bg-grid-white\/10 {
+  background-size: 30px 30px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  mask-image: radial-gradient(black, transparent 85%);
+}
+
+/* Improved Cosmic Gradient */
+.bg-gradient-cosmic {
+  background: linear-gradient(225deg, 
+    rgba(139, 92, 246, 0.15) 0%,
+    rgba(217, 70, 239, 0.15) 50%,
+    rgba(14, 165, 233, 0.15) 100%
+  );
+}
+
+/* Enhanced Text Gradient */
+.text-gradient {
+  background: linear-gradient(to right, #8B5CF6, #D946EF, #0EA5E9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+  animation: textShine 8s linear infinite;
+}
+
+/* Improved Card Styles */
+.card-gradient {
+  @apply relative overflow-hidden backdrop-blur-sm border border-white/10 transition-all duration-300;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.05) 0%, 
+    rgba(255, 255, 255, 0.02) 100%
+  );
+}
+
+.card-gradient:hover {
+  @apply border-white/20 scale-[1.02] shadow-xl;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08) 0%, 
+    rgba(255, 255, 255, 0.03) 100%
+  );
+}
+
+/* Enhanced Glass Effect */
+.glass-effect {
+  @apply relative overflow-hidden backdrop-blur-sm border border-white/10 transition-all duration-300;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.glass-effect:hover {
+  @apply border-white/20;
+  background: rgba(255, 255, 255, 0.05);
+}
