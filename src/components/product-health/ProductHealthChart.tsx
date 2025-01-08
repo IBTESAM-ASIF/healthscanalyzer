@@ -1,5 +1,5 @@
-import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import React, { memo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip } from 'recharts';
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from 'lucide-react';
 
@@ -16,12 +16,11 @@ interface ProductHealthChartProps {
   isError: boolean;
 }
 
-export const ProductHealthChart = ({ data, isLoading, isError }: ProductHealthChartProps) => {
+export const ProductHealthChart = memo(({ data, isLoading, isError }: ProductHealthChartProps) => {
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center space-y-4 min-h-[300px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading analysis data...</p>
+      <div className="flex flex-col items-center justify-center space-y-4 min-h-[300px] animate-pulse">
+        <div className="w-full h-[300px] bg-gray-800/50 rounded-lg" />
       </div>
     );
   }
@@ -56,6 +55,13 @@ export const ProductHealthChart = ({ data, isLoading, isError }: ProductHealthCh
             stroke="rgba(255,255,255,0.5)"
             tick={{ fill: 'rgba(255,255,255,0.5)' }}
           />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: 'rgba(0,0,0,0.8)', 
+              border: '1px solid rgba(255,255,255,0.1)' 
+            }}
+            labelStyle={{ color: 'white' }}
+          />
           <Bar 
             dataKey="healthy" 
             stackId="a" 
@@ -78,4 +84,6 @@ export const ProductHealthChart = ({ data, isLoading, isError }: ProductHealthCh
       </ResponsiveContainer>
     </div>
   );
-};
+});
+
+ProductHealthChart.displayName = 'ProductHealthChart';

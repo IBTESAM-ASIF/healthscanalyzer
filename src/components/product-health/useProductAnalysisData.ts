@@ -60,7 +60,8 @@ export const useProductAnalysisData = (retryCount: number) => {
     queryKey: ['productAnalysis', retryCount],
     queryFn: () => fetchAnalysisData(retryCount),
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    refetchInterval: 1000 * 60 * 10, // Refetch every 10 minutes instead of 30 seconds
+    gcTime: 1000 * 60 * 30, // Cache garbage collection time (formerly cacheTime)
+    refetchInterval: 1000 * 60 * 10, // Refetch every 10 minutes
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     meta: {

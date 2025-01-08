@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
 import { memo } from 'react';
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface StatCardProps {
   stat: {
@@ -11,10 +12,26 @@ interface StatCardProps {
     iconColor: string;
     description?: string;
   };
+  isLoading?: boolean;
 }
 
-export const StatCard = memo(({ stat }: StatCardProps) => {
+export const StatCard = memo(({ stat, isLoading }: StatCardProps) => {
   const Icon = stat.icon;
+
+  if (isLoading) {
+    return (
+      <Card className="p-6 glass-card relative overflow-hidden">
+        <div className="flex items-start justify-between mb-4">
+          <Skeleton className="h-12 w-12 rounded-lg" />
+          <Skeleton className="h-8 w-20" />
+        </div>
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-2 w-full" />
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className={`p-6 ${stat.color} border-none glass-card relative overflow-hidden group hover:scale-[1.02] transition-transform duration-200`}>
@@ -34,6 +51,11 @@ export const StatCard = memo(({ stat }: StatCardProps) => {
         <p className="text-sm font-medium text-muted-foreground">
           {stat.title}
         </p>
+        {stat.description && (
+          <p className="text-xs text-muted-foreground mt-1">
+            {stat.description}
+          </p>
+        )}
         <div className="h-1 w-full bg-gray-800/20 mt-2 rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
