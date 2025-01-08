@@ -8,12 +8,29 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    storageKey: 'supabase.auth.token'
   },
-  global: {
-    headers: {
-      'apikey': supabaseAnonKey,
-      'Authorization': `Bearer ${supabaseAnonKey}`
+  headers: {
+    'apikey': supabaseAnonKey,
+    'Authorization': `Bearer ${supabaseAnonKey}`
+  },
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
     }
+  }
+})
+
+// Add error logging for debugging
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('Supabase auth event:', event);
+  if (event === 'SIGNED_OUT') {
+    console.log('User signed out');
+  } else if (event === 'SIGNED_IN') {
+    console.log('User signed in:', session?.user?.id);
   }
 })
