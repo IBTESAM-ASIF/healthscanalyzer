@@ -21,8 +21,7 @@ export const JoinEcosystem = () => {
           </h2>
           
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Be part of our revolutionary platform that's transforming food health analysis
-            through advanced AI technology and community-driven insights.
+            HealthScanalyzer is revolutionizing food safety through advanced AI analysis. In a world where food-related health incidents are increasing, our platform uses cutting-edge AI technology to analyze and identify potential health risks in food products. By processing millions of data points from scientific research, consumer reports, and regulatory databases, we provide real-time, accurate health assessments that could prevent widespread health concerns before they occur. Join us in creating a safer, healthier future for everyone.
           </p>
         </div>
 
