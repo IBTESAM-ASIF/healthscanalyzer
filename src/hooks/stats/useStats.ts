@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { debounce } from 'lodash';
-import { initialStats } from './initialStats';
-import { useAnalysisTrigger } from './useAnalysisTrigger';
+import { initialStats } from '@/components/stats/initialStats';
+import { useAnalysisTrigger } from '@/components/stats/useAnalysisTrigger';
 import { useQuery } from '@tanstack/react-query';
 
 const ITEMS_PER_PAGE = 50;
@@ -150,8 +150,8 @@ export const useStats = () => {
     };
   }, []);
 
-  return { 
-    stats, 
+  return {
+    stats,
     isLoading,
     currentPage,
     setCurrentPage,
