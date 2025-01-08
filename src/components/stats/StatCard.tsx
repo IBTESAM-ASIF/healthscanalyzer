@@ -1,5 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { memo } from 'react';
 
 interface StatCardProps {
   stat: {
@@ -8,10 +9,11 @@ interface StatCardProps {
     icon: any;
     color: string;
     iconColor: string;
+    description?: string;
   };
 }
 
-export const StatCard = ({ stat }: StatCardProps) => {
+export const StatCard = memo(({ stat }: StatCardProps) => {
   const Icon = stat.icon;
 
   return (
@@ -37,10 +39,12 @@ export const StatCard = ({ stat }: StatCardProps) => {
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className={`h-full ${stat.iconColor.replace('text', 'bg')}/20`}
+            className={`h-full ${stat.iconColor?.replace('text', 'bg') || ''}/20`}
           />
         </div>
       </div>
     </Card>
   );
-};
+});
+
+StatCard.displayName = 'StatCard';

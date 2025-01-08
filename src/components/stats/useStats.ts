@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { debounce } from 'lodash';
 import { initialStats } from './initialStats';
-import { useAnalysisTrigger } from './useAnalysisTrigger';
 import { useQuery } from '@tanstack/react-query';
 
 const fetchProducts = async () => {
@@ -18,13 +16,11 @@ const fetchProducts = async () => {
     throw new Error('Failed to fetch statistics');
   }
 
-  console.log('Successfully fetched products:', products?.length);
-  return products;
+  return products || [];
 };
 
 export const useStats = () => {
   const { toast } = useToast();
-  const { triggerInitialAnalysis } = useAnalysisTrigger();
   const [stats, setStats] = useState(initialStats);
 
   const { data: products, isLoading, error } = useQuery({
@@ -32,16 +28,17 @@ export const useStats = () => {
     queryFn: fetchProducts,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     refetchOnWindowFocus: false,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    cacheTime: 1000 * 60 * 30, // Cache for 30 minutes
   });
 
-  useEffect(() => {
+  const calculateStats = useCallback(() => {
     if (!products || products.length === 0) {
       setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
-      triggerInitialAnalysis();
       return;
     }
 
-    // Calculate statistics
     const totalAnalyzed = products.length;
     const healthyProducts = products.filter(p => p.category === 'healthy').length;
     const harmfulProducts = products.filter(p => p.category === 'harmful').length;
@@ -66,13 +63,6 @@ export const useStats = () => {
       p => new Date(p.created_at) > last24Hours
     ).length;
 
-    const accuracyRate = 98.5;
-    const randomActiveUsers = Math.floor(Math.random() * (13000 - 1200 + 1)) + 1200;
-    
-    const totalIngredients = products.reduce((acc, product) => {
-      return acc + (product.ingredients?.length || 0);
-    }, 0);
-
     setStats(prev => prev.map(stat => {
       switch(stat.title) {
         case "Total Analyzed":
@@ -92,13 +82,15 @@ export const useStats = () => {
         case "Top Performers":
           return { ...stat, value: topPerformers.toString() };
         case "Active Users":
-          return { ...stat, value: randomActiveUsers.toString() };
+          return { ...stat, value: Math.min(Math.max(totalAnalyzed * 2, 1200), 13000).toString() };
         case "Daily Scans":
           return { ...stat, value: dailyScans.toString() };
         case "Accuracy Rate":
-          return { ...stat, value: `${accuracyRate}%` };
+          return { ...stat, value: "98.5%" };
         case "Total Ingredients":
-          return { ...stat, value: totalIngredients.toString() };
+          return { ...stat, value: products.reduce((acc, p) => 
+            acc + (Array.isArray(p.ingredients) ? p.ingredients.length : 0), 0).toString() 
+          };
         default:
           return stat;
       }
@@ -106,38 +98,8 @@ export const useStats = () => {
   }, [products]);
 
   useEffect(() => {
-    if (error) {
-      console.error('Error in stats query:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch statistics. Please try again later.",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
-
-  // Set up real-time subscription
-  useEffect(() => {
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'products'
-        },
-        () => {
-          // Invalidate the query cache to trigger a refresh
-          window.location.reload();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+    calculateStats();
+  }, [calculateStats]);
 
   return { stats, isLoading };
 };
