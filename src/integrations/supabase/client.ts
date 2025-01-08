@@ -30,22 +30,34 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, 
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Supabase auth event:', event);
   
-  if (event === 'SIGNED_OUT') {
-    console.log('User signed out');
-  } else if (event === 'SIGNED_IN') {
-    console.log('User signed in:', session?.user?.id);
-  } else if (event === 'TOKEN_REFRESHED') {
-    console.log('Token refreshed successfully');
-  } else if (event === 'USER_UPDATED') {
-    console.log('User data updated');
-  } else if (event === 'INITIAL_SESSION') {
-    console.log('Initial session loaded');
-  } else if (event === 'ERROR') {
-    console.error('Auth error occurred:', session);
-    // Handle JWT errors by attempting to refresh the session
-    if (session?.error?.message?.includes('JWT')) {
-      console.log('JWT error detected, attempting to refresh session...');
-      supabase.auth.refreshSession();
-    }
+  switch (event) {
+    case 'SIGNED_OUT':
+      console.log('User signed out');
+      break;
+    case 'SIGNED_IN':
+      console.log('User signed in:', session?.user?.id);
+      break;
+    case 'TOKEN_REFRESHED':
+      console.log('Token refreshed successfully');
+      break;
+    case 'USER_UPDATED':
+      console.log('User data updated');
+      break;
+    case 'INITIAL_SESSION':
+      console.log('Initial session loaded');
+      break;
+    default:
+      // Handle potential errors
+      if (event === 'PASSWORD_RECOVERY' || event === 'MFA_CHALLENGE_VERIFIED') {
+        console.log(`Auth event: ${event}`);
+      } else {
+        console.error('Unexpected auth event:', event);
+        // Check for JWT errors in the session
+        const error = (session as any)?.error;
+        if (error?.message?.includes('JWT')) {
+          console.log('JWT error detected, attempting to refresh session...');
+          supabase.auth.refreshSession();
+        }
+      }
   }
 });
