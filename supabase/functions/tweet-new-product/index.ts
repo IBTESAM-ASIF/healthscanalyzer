@@ -60,31 +60,56 @@ function generateOAuthHeader(method: string, url: string): string {
 }
 
 async function generateTweetContent(products: any[]): Promise<string> {
-  // Create a combined tweet for multiple products
-  const productSummaries = products.map(product => 
-    `${product.name} (Health Score: ${product.health_score}%)`
-  ).join("\n");
+  // Create a more detailed combined tweet for multiple products
+  const productSummaries = products.map(product => {
+    const category = product.category ? `[${product.category.toUpperCase()}]` : '';
+    const keyBenefit = product.pros && product.pros.length > 0 ? `✨ ${product.pros[0]}` : '';
+    return `🏥 ${product.name} ${category}\n💯 Health Score: ${product.health_score}%\n${keyBenefit}`;
+  }).join("\n\n");
 
-  return `🔬 New Product Analysis Alert!\n\n${productSummaries}\n\n#HealthTech #ProductSafety\nMore details: https://x.com/healthscanai`;
+  const timestamp = new Date().toLocaleString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    hour: '2-digit', 
+    minute: '2-digit' 
+  });
+
+  return `🤖 AI Health Analysis Update (${timestamp})\n\n${productSummaries}\n\n🔍 Full Analysis: https://healthscanalyzer.ai\n#HealthTech #AI #ProductSafety`;
 }
 
 async function sendTweet(tweetText: string): Promise<any> {
-  const url = "https://api.x.com/2/tweets";
+  const url = "https://api.twitter.com/2/tweets";
   const method = "POST";
-  const oauthHeader = generateOAuthHeader(method, url);
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const nonce = Math.random().toString(36).substring(2);
+
+  const params = {
+    oauth_consumer_key: API_KEY!,
+    oauth_token: ACCESS_TOKEN!,
+    oauth_signature_method: "HMAC-SHA1",
+    oauth_timestamp: timestamp,
+    oauth_nonce: nonce,
+    oauth_version: "1.0",
+  };
+
+  const signature = generateOAuthSignature(
+    method,
+    url,
+    params,
+    API_SECRET!,
+    ACCESS_TOKEN_SECRET!
+  );
+
+  const authHeader = `OAuth oauth_consumer_key="${API_KEY}",oauth_token="${ACCESS_TOKEN}",oauth_signature_method="HMAC-SHA1",oauth_timestamp="${timestamp}",oauth_nonce="${nonce}",oauth_version="1.0",oauth_signature="${signature}"`;
 
   const response = await fetch(url, {
-    method: method,
+    method: "POST",
     headers: {
-      Authorization: oauthHeader,
+      Authorization: authHeader,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ text: tweetText }),
   });
-
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
 
   return response.json();
 }
@@ -112,7 +137,10 @@ Deno.serve(async (req) => {
     await sendTweet(tweetContent);
 
     return new Response(
-      JSON.stringify({ message: "Tweet posted successfully" }),
+      JSON.stringify({ 
+        message: "Tweet posted successfully",
+        tweet_content: tweetContent 
+      }),
       { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
@@ -120,8 +148,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        status: 500,
         headers: { "Content-Type": "application/json" },
+        status: 500,
       }
     );
   }
