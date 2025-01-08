@@ -29,16 +29,13 @@ export const useProductSearch = () => {
       if (searchQuery) {
         countQuery = countQuery.ilike('name', `%${searchQuery}%`);
       } else {
-        countQuery = countQuery.eq('category', activeCategory as string);
+        countQuery = countQuery.eq('category', activeCategory);
       }
 
       const { count, error: countError } = await countQuery;
       
       if (countError) {
         console.error('Count query error:', countError);
-        if (countError.message?.includes('JWT')) {
-          throw new Error('Authentication expired. Please refresh the page.');
-        }
         throw countError;
       }
       
@@ -52,7 +49,7 @@ export const useProductSearch = () => {
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
       } else {
-        query = query.eq('category', activeCategory as string);
+        query = query.eq('category', activeCategory);
       }
 
       const from = (validatedPage - 1) * ITEMS_PER_PAGE;
@@ -70,9 +67,6 @@ export const useProductSearch = () => {
             fetchProducts(searchQuery, activeCategory, currentPage, retries - 1);
           }, 1000);
           return;
-        }
-        if (error.message?.includes('JWT')) {
-          throw new Error('Authentication expired. Please refresh the page.');
         }
         throw error;
       }
@@ -105,15 +99,14 @@ export const useProductSearch = () => {
             .map(product => ({
               ...product,
               created_at: new Date().toISOString(),
-              category: product.category as ProductCategory
+              category: activeCategory
             }));
           const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
           setProducts(getPaginatedData(sortedCategoryProducts, validatedPage));
           setTotalItems(categoryProducts.length);
         }
       } else {
-        const typedData = data as unknown as Product[];
-        setProducts(typedData);
+        setProducts(data as Product[]);
         setTotalItems(count || 0);
       }
     } catch (error: any) {

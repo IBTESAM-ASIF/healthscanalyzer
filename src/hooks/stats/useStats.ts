@@ -1,14 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { initialStats } from '@/components/stats/initialStats';
-import { useAnalysisTrigger } from './useAnalysisTrigger';
 import { useQuery } from '@tanstack/react-query';
 import { Product } from '@/types/product';
 
-const fetchProducts = async () => {
+const fetchProducts = async (): Promise<Product[]> => {
   console.log('Fetching products...');
-  const { data: products, error } = await supabase
+  const { data, error } = await supabase
     .from('products')
     .select('*')
     .order('created_at', { ascending: false });
@@ -18,13 +17,12 @@ const fetchProducts = async () => {
     throw new Error('Failed to fetch statistics');
   }
 
-  console.log('Successfully fetched products:', products?.length);
-  return products as Product[];
+  console.log('Successfully fetched products:', data?.length);
+  return data as Product[];
 };
 
 export const useStats = () => {
   const { toast } = useToast();
-  const { triggerInitialAnalysis } = useAnalysisTrigger();
   const [stats, setStats] = useState(initialStats);
 
   const { data: products, isLoading, error } = useQuery({
@@ -34,10 +32,9 @@ export const useStats = () => {
     refetchOnWindowFocus: false,
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!products || products.length === 0) {
       setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
-      triggerInitialAnalysis();
       return;
     }
 
@@ -128,7 +125,6 @@ export const useStats = () => {
           table: 'products'
         },
         () => {
-          // Invalidate the query cache to trigger a refresh
           window.location.reload();
         }
       )
