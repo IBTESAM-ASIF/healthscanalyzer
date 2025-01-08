@@ -22,14 +22,12 @@ export const useProductSearch = () => {
       setLoading(true);
       console.log('Fetching products with params:', { searchQuery, activeCategory, currentPage, retries });
       
-      // First verify auth status
       const { data: authData, error: authError } = await supabase.auth.getSession();
       if (authError) {
         console.error('Auth error:', authError);
         throw new Error('Authentication service unavailable');
       }
       
-      // Get total count with proper error handling
       let countQuery = supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
@@ -37,7 +35,7 @@ export const useProductSearch = () => {
       if (searchQuery) {
         countQuery = countQuery.ilike('name', `%${searchQuery}%`);
       } else {
-        countQuery = countQuery.eq('category', activeCategory);
+        countQuery = countQuery.eq('category', activeCategory as string);
       }
 
       const { count, error: countError } = await countQuery;
@@ -53,7 +51,6 @@ export const useProductSearch = () => {
       const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
       const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
       
-      // Now fetch the actual data with validated page number
       let query = supabase
         .from('products')
         .select('*');
@@ -61,7 +58,7 @@ export const useProductSearch = () => {
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
       } else {
-        query = query.eq('category', activeCategory);
+        query = query.eq('category', activeCategory as string);
       }
 
       const from = (validatedPage - 1) * ITEMS_PER_PAGE;
@@ -86,8 +83,6 @@ export const useProductSearch = () => {
         throw error;
       }
 
-      console.log('Data fetched successfully:', data?.length, 'items');
-      
       if (!data || data.length === 0) {
         console.log('No data found, using placeholders');
         if (searchQuery) {
@@ -123,7 +118,7 @@ export const useProductSearch = () => {
           setTotalItems(categoryProducts.length);
         }
       } else {
-        setProducts(data);
+        setProducts(data as Product[]);
         setTotalItems(count || 0);
       }
     } catch (error: any) {
