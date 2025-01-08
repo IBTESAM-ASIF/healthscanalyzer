@@ -21,7 +21,15 @@ export const useProductSearch = () => {
     try {
       setLoading(true);
       console.log('Fetching products with params:', { searchQuery, activeCategory, currentPage, retries });
-
+      
+      // First verify auth status
+      const { data: authData, error: authError } = await supabase.auth.getSession();
+      if (authError) {
+        console.error('Auth error:', authError);
+        throw new Error('Authentication service unavailable');
+      }
+      
+      // Get total count with proper error handling
       let countQuery = supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
@@ -36,12 +44,16 @@ export const useProductSearch = () => {
       
       if (countError) {
         console.error('Count query error:', countError);
+        if (countError.message?.includes('JWT')) {
+          throw new Error('Authentication expired. Please refresh the page.');
+        }
         throw countError;
       }
       
       const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
       const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
       
+      // Now fetch the actual data with validated page number
       let query = supabase
         .from('products')
         .select('*');
@@ -68,9 +80,14 @@ export const useProductSearch = () => {
           }, 1000);
           return;
         }
+        if (error.message?.includes('JWT')) {
+          throw new Error('Authentication expired. Please refresh the page.');
+        }
         throw error;
       }
 
+      console.log('Data fetched successfully:', data?.length, 'items');
+      
       if (!data || data.length === 0) {
         console.log('No data found, using placeholders');
         if (searchQuery) {
@@ -95,18 +112,18 @@ export const useProductSearch = () => {
           setProducts(getPaginatedData(sortedPlaceholders, validatedPage));
           setTotalItems(allPlaceholders.length);
         } else {
-          const categoryProducts = (placeholderProducts[activeCategory] || [])
+          const categoryProducts = (placeholderProducts[activeCategory as keyof typeof placeholderProducts] || [])
             .map(product => ({
               ...product,
               created_at: new Date().toISOString(),
-              category: activeCategory
+              category: product.category as ProductCategory
             }));
           const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
           setProducts(getPaginatedData(sortedCategoryProducts, validatedPage));
           setTotalItems(categoryProducts.length);
         }
       } else {
-        setProducts(data as Product[]);
+        setProducts(data);
         setTotalItems(count || 0);
       }
     } catch (error: any) {

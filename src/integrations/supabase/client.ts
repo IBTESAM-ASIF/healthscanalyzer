@@ -1,20 +1,33 @@
-import { createClient } from '@supabase/supabase-js'
-import type { Database } from './types'
+import { createClient } from '@supabase/supabase-js';
+import type { Database } from './types';
 
-const supabaseUrl = 'https://bwuvybxxfpcxoqtsfjgs.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3dXZ5Ynh4ZnBjeG9xdHNmamdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDQ3MjY0MDAsImV4cCI6MjAyMDMwMjQwMH0.PwanC4ODlrZqBXXn_Q-l_4qV-VkiapYwGZQdBh_dBGE'
+const SUPABASE_URL = "https://bwuvybxxfpcxoqtsfjgs.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ3dXZ5Ynh4ZnBjeG9xdHNmamdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzYwMjI4NzgsImV4cCI6MjA1MTU5ODg3OH0.g6oq4sQBFdtGP8q3slBeMiDbNXid86fVRaFE-G0eCi4";
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    autoRefreshToken: true,
     persistSession: true,
+    autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: localStorage
+    storageKey: 'supabase.auth.token',
   },
   global: {
-    fetch: fetch
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    },
+  },
+  db: {
+    schema: 'public'
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
-})
+});
 
 // Add error logging for debugging
 supabase.auth.onAuthStateChange((event, session) => {
@@ -24,4 +37,4 @@ supabase.auth.onAuthStateChange((event, session) => {
   } else if (event === 'SIGNED_IN') {
     console.log('User signed in:', session?.user?.id);
   }
-})
+});
