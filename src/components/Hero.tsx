@@ -75,10 +75,15 @@ export const Hero = () => {
             animate={{ opacity: 1, y: 0 }}
             className="glass-effect px-3 py-1.5 rounded-full transform hover:scale-105 transition-all duration-300 border border-purple-500/20 group cursor-pointer"
           >
-            <span className="flex items-center gap-2 text-sm font-medium text-purple-200/90">
+            <a 
+              href="https://pump.fun/coin/H133UsYXFKX7upFom4u7GBBheSS6VdF36dGwJ1wypump" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="flex items-center gap-2 text-sm font-medium text-purple-200/90 hover:text-purple-100"
+            >
               <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-              Coming soon $HSAI Token
-            </span>
+              Get $HSAI Token Buy Now
+            </a>
           </motion.div>
 
           <motion.div 
