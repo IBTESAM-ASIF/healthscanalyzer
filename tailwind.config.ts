@@ -12,19 +12,9 @@ export default {
   theme: {
     container: {
       center: true,
-      padding: {
-        DEFAULT: '1rem',
-        sm: '2rem',
-        lg: '4rem',
-        xl: '5rem',
-        '2xl': '6rem',
-      },
+      padding: "2rem",
       screens: {
-        sm: '640px',
-        md: '768px',
-        lg: '1024px',
-        xl: '1280px',
-        '2xl': '1536px',
+        "2xl": "1400px",
       },
     },
     extend: {
@@ -84,21 +74,67 @@ export default {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        "spin-slow": {
+          "0%": { transform: "rotate(0deg)" },
+          "100%": { transform: "rotate(360deg)" },
+        },
+        "fade-in-up": {
+          "0%": { opacity: "0", transform: "translateY(20px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "slide-in": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(0)" },
+        },
+        pulse: {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: ".5" },
+        },
+        "scale-up": {
+          "0%": { transform: "scale(0.95)" },
+          "100%": { transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         float: "float 6s ease-in-out infinite",
         shimmer: "shimmer 2s infinite",
+        "spin-slow": "spin-slow 20s linear infinite",
+        "fade-in-up": "fade-in-up 0.5s ease-out",
+        "fade-in": "fade-in 0.3s ease-out",
+        "slide-in": "slide-in 0.5s ease-out",
+        pulse: "pulse 2s ease-in-out infinite",
+        "scale-up": "scale-up 0.3s ease-out",
       },
       spacing: {
         18: "4.5rem",
         22: "5.5rem",
         30: "7.5rem",
       },
+      fontSize: {
+        "2xs": "0.625rem",
+        "3xl": "1.875rem",
+        "4xl": "2.25rem",
+        "5xl": "3rem",
+        "6xl": "3.75rem",
+        "7xl": "4.5rem",
+        "8xl": "6rem",
+        "9xl": "8rem",
+      },
       borderRadius: {
         "4xl": "2rem",
         "5xl": "2.5rem",
+      },
+      transitionDuration: {
+        400: "400ms",
+      },
+      backdropBlur: {
+        xs: "2px",
       },
     },
   },

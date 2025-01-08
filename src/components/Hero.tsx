@@ -77,7 +77,7 @@ export const Hero = () => {
           >
             <span className="flex items-center gap-2 text-sm font-medium text-purple-200/90">
               <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-              Coming soon $HSAI Token
+              Coming soon $HealthScanAI Token
             </span>
           </motion.div>
 

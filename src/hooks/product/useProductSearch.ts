@@ -1,108 +1,123 @@
-import { useState } from 'react';
-import { supabase, handleSupabaseError } from "@/integrations/supabase/client";
+import { useState, useCallback } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ProductCategory } from '@/types/product';
+import { Product, ProductCategory } from '@/types/product';
+import { placeholderProducts } from '@/components/product/placeholderData';
+import _ from 'lodash';
+import { ITEMS_PER_PAGE, getPaginatedData } from '@/utils/pagination';
 
 export const useProductSearch = () => {
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [totalItems, setTotalItems] = useState(0);
   const { toast } = useToast();
 
-  const fetchProducts = async (
+  const fetchProducts = useCallback(async (
     searchQuery: string,
-    category: ProductCategory,
-    page: number,
-    retryCount = 0
+    activeCategory: ProductCategory,
+    currentPage: number
   ) => {
     try {
       setLoading(true);
-      console.log('Fetching products with params:', { searchQuery, category, page });
+      
+      // First, get the total count
+      let countQuery = supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
 
-      // Calculate pagination
-      const itemsPerPage = 6;
-      const offset = (page - 1) * itemsPerPage;
+      if (searchQuery) {
+        countQuery = countQuery.ilike('name', `%${searchQuery}%`);
+      } else {
+        countQuery = countQuery.eq('category', activeCategory);
+      }
 
-      // Build query
+      const { count, error: countError } = await countQuery;
+      
+      if (countError) throw countError;
+      
+      const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
+      const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+      
+      // Now fetch the actual data with validated page number
       let query = supabase
         .from('products')
-        .select('*', { count: 'exact' });
+        .select('*');
 
-      // Apply category filter
-      if (category) {
-        query = query.eq('category', category);
-      }
-
-      // Apply search filter if present
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
+      } else {
+        query = query.eq('category', activeCategory);
       }
 
-      // Add ordering and pagination
-      query = query
+      const from = (validatedPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      const { data, error } = await query
         .order('created_at', { ascending: false })
-        .range(offset, offset + itemsPerPage - 1);
-
-      // Log the generated query for debugging
-      console.log('Generated Supabase query:', query);
-
-      // Execute query with timeout
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 15000); // Increased timeout to 15 seconds
-      });
-
-      const { data, error, count } = await Promise.race([
-        query,
-        timeoutPromise
-      ]) as any;
-
-      if (error) throw error;
-
-      console.log('Products fetched successfully:', {
-        count,
-        resultsCount: data?.length,
-        page,
-        category
-      });
-
-      setProducts(data || []);
-      setTotalItems(count || 0);
-
-    } catch (error: any) {
-      console.error('Error fetching products:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
-
-      // Retry logic for network errors with exponential backoff
-      if (retryCount < 3 && (error.message === "Failed to fetch" || error.message === "Request timeout")) {
-        console.log(`Retrying fetch attempt ${retryCount + 1}/3...`);
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));
-        return fetchProducts(searchQuery, category, page, retryCount + 1);
+        .range(from, to);
+      
+      if (error) {
+        console.error('Supabase query error:', error);
+        throw error;
       }
 
-      const errorMessage = handleSupabaseError(error);
+      if (!data || data.length === 0) {
+        console.log('No data found, using placeholders');
+        if (searchQuery) {
+          const allPlaceholders = [
+            ...placeholderProducts.healthy,
+            ...placeholderProducts.restricted,
+            ...placeholderProducts.harmful
+          ]
+          .filter(product => 
+            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (product.ingredients && product.ingredients.some(ing => 
+              ing.toLowerCase().includes(searchQuery.toLowerCase())
+            ))
+          )
+          .map(product => ({
+            ...product,
+            created_at: new Date().toISOString(),
+            category: product.category as ProductCategory
+          }));
+
+          const sortedPlaceholders = _.orderBy(allPlaceholders, ['created_at'], ['desc']);
+          setProducts(getPaginatedData(sortedPlaceholders, validatedPage));
+          setTotalItems(allPlaceholders.length);
+        } else {
+          const categoryProducts = (placeholderProducts[activeCategory as keyof typeof placeholderProducts] || [])
+            .map(product => ({
+              ...product,
+              created_at: new Date().toISOString(),
+              category: product.category as ProductCategory
+            }));
+          const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
+          setProducts(getPaginatedData(sortedCategoryProducts, validatedPage));
+          setTotalItems(categoryProducts.length);
+        }
+      } else {
+        console.log('Data fetched successfully:', data.length, 'items');
+        setProducts(data);
+        setTotalItems(count || 0);
+      }
+    } catch (error) {
+      console.error('Error fetching products:', error);
       toast({
-        title: "Error Loading Products",
-        description: errorMessage,
+        title: "Error",
+        description: "Failed to fetch products. Please try again later.",
         variant: "destructive",
       });
-
-      // Set empty state on error
       setProducts([]);
       setTotalItems(0);
-
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   return {
     products,
     loading,
     totalItems,
-    fetchProducts,
+    fetchProducts
   };
 };

@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useStatsData } from './useStatsData';
+import { calculateStats } from './useStatsCalculation';
 import { useStatsSubscription } from './useStatsSubscription';
 import { useAnalysisTrigger } from '@/components/stats/useAnalysisTrigger';
-import { fetchProductCounts, fetchDetailedProducts } from './useProductStats';
-import { calculateProductStatistics, mapStatsToValues } from './calculateStatistics';
 
 export const useStats = () => {
   const { stats, setStats, isLoading, setIsLoading } = useStatsData();
@@ -14,31 +14,77 @@ export const useStats = () => {
   const fetchStats = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching stats - started');
+      console.log('Fetching stats...');
       
-      // Get product counts
-      const counts = await fetchProductCounts();
-      console.log('Category counts fetched successfully:', counts);
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
 
-      // Fetch detailed product data
-      const products = await fetchDetailedProducts();
-      
+      console.log('Fetched products:', products?.length);
+
       if (!products || products.length === 0) {
-        console.log('No products found, triggering initial analysis');
         setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
         await triggerInitialAnalysis();
         return;
       }
 
-      console.log(`Processing ${products.length} products for statistics`);
+      // Log any potentially miscategorized products
+      const potentialIssues = products.filter(p => {
+        const hasWarnings = p.has_fatal_incidents || p.has_serious_adverse_events;
+        const isHealthy = p.category === 'healthy';
+        return hasWarnings && isHealthy;
+      });
 
-      // Calculate statistics
-      const calculatedStats = calculateProductStatistics(products);
-      console.log('Calculated metrics:', calculatedStats);
+      if (potentialIssues.length > 0) {
+        console.warn('Found potentially miscategorized products:', potentialIssues);
+        toast({
+          title: "Warning",
+          description: "Found products marked as healthy but with safety warnings. Please review.",
+          variant: "destructive",
+        });
+      }
 
-      // Update stats with new values
-      setStats(prev => mapStatsToValues(prev, calculatedStats, counts));
-      console.log('Statistics updated successfully');
+      const calculatedStats = calculateStats(products);
+      
+      if (calculatedStats) {
+        console.log('Calculated new stats:', calculatedStats);
+        setStats(prev => prev.map(stat => {
+          switch(stat.title) {
+            case "Total Analyzed":
+              return { ...stat, value: calculatedStats.totalAnalyzed.toString() };
+            case "Healthy Products":
+              return { ...stat, value: calculatedStats.healthyProducts.toString() };
+            case "Harmful Products":
+              return { ...stat, value: calculatedStats.harmfulProducts.toString() };
+            case "Moderate Risk":
+              return { ...stat, value: calculatedStats.moderateRisk.toString() };
+            case "Average Health Score":
+              return { ...stat, value: `${calculatedStats.avgHealthScore}%` };
+            case "High Risk Products":
+              return { ...stat, value: calculatedStats.highRiskProducts.toString() };
+            case "Avg Analysis Cost":
+              return { ...stat, value: `$${calculatedStats.avgAnalysisCost}` };
+            case "Top Performers":
+              return { ...stat, value: calculatedStats.topPerformers.toString() };
+            case "Active Users":
+              return { ...stat, value: calculatedStats.randomActiveUsers.toString() };
+            case "Daily Scans":
+              return { ...stat, value: calculatedStats.dailyScans.toString() };
+            case "Accuracy Rate":
+              return { ...stat, value: `${calculatedStats.accuracyRate}%` };
+            case "Total Ingredients":
+              return { ...stat, value: calculatedStats.totalIngredients.toString() };
+            default:
+              return stat;
+          }
+        }));
+      }
     } catch (error) {
       console.error('Error in fetchStats:', error);
       toast({

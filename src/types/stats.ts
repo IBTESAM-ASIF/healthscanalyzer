@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { LucideIcon } from 'lucide-react';
 
 export interface StatType {
   title: string;
@@ -8,9 +8,6 @@ export interface StatType {
   iconColor: string;
 }
 
-export interface ProductStats {
-  total: number;
-  healthy: number;
-  harmful: number;
-  restricted: number;
+export interface StatsGridProps {
+  stats: StatType[];
 }
