@@ -21,25 +21,31 @@ export const useProductSearch = () => {
       setLoading(true);
       let query = supabase
         .from('products')
-        .select('*', { count: 'exact' })
-        .order('created_at', { ascending: false });
+        .select('*', { count: 'exact' });
 
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
-      } else {
+      }
+      
+      if (!searchQuery) {
         query = query.eq('category', activeCategory);
       }
 
-      query = query.range(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE - 1
-      );
+      // Add pagination
+      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const to = from + ITEMS_PER_PAGE - 1;
+      
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to);
+      
+      if (error) {
+        console.error('Supabase query error:', error);
+        throw error;
+      }
 
-      const { data, error, count } = await query;
-      
-      if (error) throw error;
-      
       if (!data || data.length === 0) {
+        console.log('No data found, using placeholders');
         if (searchQuery) {
           const allPlaceholders = [
             ...placeholderProducts.healthy,
@@ -48,9 +54,9 @@ export const useProductSearch = () => {
           ]
           .filter(product => 
             product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            product.ingredients.some(ing => 
+            (product.ingredients && product.ingredients.some(ing => 
               ing.toLowerCase().includes(searchQuery.toLowerCase())
-            )
+            ))
           )
           .map(product => ({
             ...product,
@@ -73,6 +79,7 @@ export const useProductSearch = () => {
           setTotalItems(categoryProducts.length);
         }
       } else {
+        console.log('Data fetched successfully:', data.length, 'items');
         setProducts(data);
         setTotalItems(count || 0);
       }
