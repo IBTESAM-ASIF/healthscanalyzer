@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ProductHealthChart } from './product-health/ProductHealthChart';
 import { CategoryDescriptions } from './product-health/CategoryDescriptions';
+import { AlertCircle } from 'lucide-react';
 
 const ProductHealthAnalysis = () => {
   const { toast } = useToast();
@@ -28,7 +29,11 @@ const ProductHealthAnalysis = () => {
 
       if (error) {
         console.error('Supabase query error:', error);
-        throw new Error(error.message || 'Failed to fetch products data');
+        throw new Error(
+          error.message === 'Failed to fetch' 
+            ? 'Unable to connect to the database. Please check your connection and try again.'
+            : error.message || 'Failed to fetch products data'
+        );
       }
 
       if (!products) {
@@ -68,8 +73,11 @@ const ProductHealthAnalysis = () => {
     queryFn: fetchAnalysisData,
     refetchInterval: 30000,
     staleTime: 25000,
-    retry: 3,
+    retry: 5,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    meta: {
+      errorMessage: 'Failed to load product analysis data'
+    }
   });
 
   React.useEffect(() => {
@@ -100,6 +108,7 @@ const ProductHealthAnalysis = () => {
   if (isError && error instanceof Error) {
     return (
       <Alert variant="destructive" className="m-4">
+        <AlertCircle className="h-4 w-4" />
         <AlertDescription>
           {error.message || 'Failed to fetch analysis data. Please try again later.'}
         </AlertDescription>
