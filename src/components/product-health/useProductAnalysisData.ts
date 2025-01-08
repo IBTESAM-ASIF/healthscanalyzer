@@ -3,12 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 
 export const fetchAnalysisData = async (retryCount: number) => {
   try {
-    console.log('Attempting to fetch ALL products for analysis, retry attempt:', retryCount);
+    console.log('Attempting to fetch products for analysis, retry attempt:', retryCount);
 
     const { data: products, error } = await supabase
       .from('products')
       .select('category, created_at')
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(1000); // Limit to last 1000 products for better performance
 
     if (error) throw error;
 
@@ -17,7 +18,7 @@ export const fetchAnalysisData = async (retryCount: number) => {
       return [];
     }
 
-    console.log('Successfully fetched ALL products for analysis:', products.length);
+    console.log('Successfully fetched products for analysis:', products.length);
 
     // Group products by date for the last 10 days
     const endDate = new Date();
@@ -58,9 +59,9 @@ export const useProductAnalysisData = (retryCount: number) => {
   return useQuery({
     queryKey: ['productAnalysis', retryCount],
     queryFn: () => fetchAnalysisData(retryCount),
-    refetchInterval: 30000,
-    staleTime: 25000,
-    retry: 5,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    refetchInterval: 1000 * 60 * 10, // Refetch every 10 minutes instead of 30 seconds
+    retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     meta: {
       errorMessage: 'Failed to load product analysis data'
