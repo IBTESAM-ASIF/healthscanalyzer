@@ -15,8 +15,16 @@ export const useStats = () => {
   const fetchStats = async () => {
     try {
       setIsLoading(true);
-      console.log('Fetching stats...');
+      console.log('Fetching ALL stats without limits...');
       
+      // First get the total count
+      const { count: totalCount } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      console.log('Total products in database:', totalCount);
+
+      // Then fetch all products without any limit
       const { data: products, error } = await supabase
         .from('products')
         .select('*')
@@ -27,7 +35,7 @@ export const useStats = () => {
         throw error;
       }
 
-      console.log('Fetched products:', products?.length);
+      console.log('Successfully fetched all products:', products?.length);
 
       if (!products || products.length === 0) {
         setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
