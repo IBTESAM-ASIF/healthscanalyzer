@@ -1,0 +1,84 @@
+/* Base Typography */
+:root {
+  --h1-size-mobile: clamp(2rem, 8vw, 3rem);
+  --h1-size-desktop: clamp(2.5rem, 5vw, 4rem);
+  --h2-size-mobile: clamp(1.5rem, 6vw, 2.5rem);
+  --h2-size-desktop: clamp(2rem, 4vw, 3.5rem);
+  --h3-size-mobile: clamp(1.25rem, 5vw, 2rem);
+  --h3-size-desktop: clamp(1.75rem, 3vw, 2.5rem);
+  --body-size-mobile: clamp(0.875rem, 4vw, 1rem);
+  --body-size-desktop: clamp(1rem, 2vw, 1.125rem);
+}
+
+/* Responsive Container */
+.container-fluid {
+  width: min(100% - 2rem, 1400px);
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 5vw, 2rem);
+}
+
+/* Responsive Typography */
+h1, .h1 {
+  font-size: var(--h1-size-mobile);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+h2, .h2 {
+  font-size: var(--h2-size-mobile);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+h3, .h3 {
+  font-size: var(--h3-size-mobile);
+  line-height: 1.3;
+}
+
+p, .body {
+  font-size: var(--body-size-mobile);
+  line-height: 1.6;
+}
+
+@media (min-width: 768px) {
+  h1, .h1 { font-size: var(--h1-size-desktop); }
+  h2, .h2 { font-size: var(--h2-size-desktop); }
+  h3, .h3 { font-size: var(--h3-size-desktop); }
+  p, .body { font-size: var(--body-size-desktop); }
+}
+
+/* Better Touch Targets */
+@media (max-width: 640px) {
+  button, 
+  .button,
+  a {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.5rem 1rem;
+  }
+  
+  input, 
+  select, 
+  textarea {
+    min-height: 44px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
+
+/* Improved Focus States */
+:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 2px;
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+/* Better Selection Colors */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary));
+}
