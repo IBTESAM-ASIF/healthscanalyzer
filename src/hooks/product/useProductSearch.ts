@@ -15,12 +15,14 @@ export const useProductSearch = () => {
   const fetchProducts = useCallback(async (
     searchQuery: string,
     activeCategory: ProductCategory,
-    currentPage: number
+    currentPage: number,
+    retries = 3
   ) => {
     try {
       setLoading(true);
+      console.log('Fetching products with params:', { searchQuery, activeCategory, currentPage, retries });
       
-      // First, get the total count
+      // First, get the total count with proper error handling
       let countQuery = supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
@@ -33,7 +35,10 @@ export const useProductSearch = () => {
 
       const { count, error: countError } = await countQuery;
       
-      if (countError) throw countError;
+      if (countError) {
+        console.error('Count query error:', countError);
+        throw countError;
+      }
       
       const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
       const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
@@ -57,7 +62,14 @@ export const useProductSearch = () => {
         .range(from, to);
       
       if (error) {
-        console.error('Supabase query error:', error);
+        console.error('Data fetch error:', error);
+        if (retries > 0) {
+          console.log(`Retrying fetch... (${retries} attempts remaining)`);
+          setTimeout(() => {
+            fetchProducts(searchQuery, activeCategory, currentPage, retries - 1);
+          }, 1000);
+          return;
+        }
         throw error;
       }
 
@@ -112,7 +124,7 @@ export const useProductSearch = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   return {
     products,
