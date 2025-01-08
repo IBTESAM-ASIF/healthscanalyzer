@@ -6,39 +6,56 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const LOGO_PROMPT = `Create a sophisticated, modern logo for 'HealthScanalyzer', a health-tech platform that uses AI to analyze product safety:
+const LOGO_PROMPT = `Create an ultra-premium, innovative logo for 'HealthScanAI Token' that merges medical technology with cryptocurrency aesthetics:
 
 Key Visual Elements:
-- A sleek DNA helix morphing into digital scanning lines
-- Gradient colors: vibrant purple (#8B5CF6) to magenta pink (#D946EF)
-- Minimalist and clean design with a medical/tech fusion
-- Abstract 'H' or 'HS' monogram subtly integrated
-- Sacred geometry patterns suggesting precision and trust
+- A dynamic fusion of a medical cross/caduceus with blockchain/cryptocurrency elements
+- Holographic 3D effect with depth and dimension
+- Sacred geometry patterns forming a hexagonal grid in the background
+- Subtle DNA helix structure integrated into the design
+- Gleaming metallic finish with iridescent highlights
+- Clean, modern sans-serif typography (if text is included)
 
-Must Include:
-- Professional health symbolism (subtle cross or heartbeat element)
-- Tech elements (circuit patterns, scan lines, or data visualization)
-- Modern geometric shapes (hexagon or circle base)
-- Clean negative space usage
-- High contrast for visibility
+Color Palette:
+- Primary: Deep sapphire blue (#1E3A8A) representing trust and stability
+- Secondary: Vibrant teal (#0D9488) suggesting health and technology
+- Accent: Metallic gold (#FCD34D) for premium cryptocurrency feel
+- Highlights: Ethereal purple (#7C3AED) for AI/innovation
+- Background: Deep space black with subtle gradients
 
-Style Requirements:
-- Ultra-modern and premium feel
-- Perfect symmetry and balance
-- Scalable for all sizes (app icon to billboard)
-- Works on light and dark backgrounds
-- No text required
-- Professional gradient effects
-- Corporate-ready design
+Design Requirements:
+- Incorporate a stylized 'H' or '$HSAI' symbol
+- Abstract medical scanning waves or pulse lines
+- Blockchain nodes or connected neural network pattern
+- Cutting-edge 3D rendering with realistic lighting
+- Premium metallic/glass material textures
+- Perfect symmetry and golden ratio proportions
 
-The final logo should convey:
-- Advanced AI technology
-- Medical authority
-- Trust and safety
-- Innovation and precision
-- Professional excellence
+Style Guidelines:
+- Ultra-modern and futuristic aesthetic
+- Professional grade finish suitable for both medical and crypto markets
+- Scalable from small icons to large displays
+- Clear silhouette that works in both light and dark modes
+- Subtle motion suggestion through dynamic lines
+- Enterprise-level polish and sophistication
 
-Output as a clean, vector-style design with sharp edges and perfect geometry. Ensure it looks premium and established, suitable for a leading health-tech platform.`
+The logo should convey:
+- Advanced AI technology and innovation
+- Medical authority and healthcare focus
+- Blockchain security and value
+- Premium investment opportunity
+- Trust and scientific precision
+- Future of healthcare technology
+
+Additional Specifications:
+- Ensure high contrast for visibility
+- Include subtle gradient overlays
+- Add dimensional shadows and highlights
+- Create a sense of movement and energy
+- Maintain clean, uncluttered composition
+- Include space for potential text integration
+
+Output as a high-end, photorealistic 3D render with perfect technical execution. The final result should look exceptionally premium and establish instant credibility in both healthcare and cryptocurrency markets.`
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
