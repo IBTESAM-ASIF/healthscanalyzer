@@ -1,9 +1,14 @@
 import { StatCard } from './StatCard';
 import { motion } from 'framer-motion';
-import { Stat } from '@/types/stats';
 
 interface StatsGridProps {
-  stats: Stat[];
+  stats: Array<{
+    title: string;
+    value: string;
+    icon: any;
+    color: string;
+    iconColor: string;
+  }>;
 }
 
 export const StatsGrid = ({ stats }: StatsGridProps) => {

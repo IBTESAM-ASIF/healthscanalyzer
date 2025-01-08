@@ -1,26 +1,29 @@
 import { Card } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { Stat } from "@/types/stats";
 
 interface StatCardProps {
-  stat: Stat;
+  stat: {
+    title: string;
+    value: string;
+    icon: any;
+    color: string;
+    iconColor: string;
+  };
 }
 
 export const StatCard = ({ stat }: StatCardProps) => {
   const Icon = stat.icon;
-  const iconColorClass = stat.iconColor || 'text-primary';
-  const backgroundColorClass = stat.color || 'bg-primary/10';
 
   return (
-    <Card className={`p-6 ${backgroundColorClass} border-none glass-card relative overflow-hidden group hover:scale-[1.02] transition-transform duration-200`}>
+    <Card className={`p-6 ${stat.color} border-none glass-card relative overflow-hidden group hover:scale-[1.02] transition-transform duration-200`}>
       <div className="flex items-start justify-between mb-4">
-        <div className={`p-3 rounded-lg ${backgroundColorClass}`}>
-          <Icon className={`h-6 w-6 ${iconColorClass}`} />
+        <div className={`p-3 rounded-lg ${stat.color}`}>
+          <Icon className={`h-6 w-6 ${stat.iconColor}`} />
         </div>
         <motion.div
           initial={{ scale: 1 }}
           whileHover={{ scale: 1.1 }}
-          className={`text-2xl font-bold ${iconColorClass}`}
+          className={`text-2xl font-bold ${stat.iconColor}`}
         >
           {stat.value}
         </motion.div>
@@ -34,7 +37,7 @@ export const StatCard = ({ stat }: StatCardProps) => {
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className={`h-full ${backgroundColorClass}`}
+            className={`h-full ${stat.iconColor.replace('text', 'bg')}/20`}
           />
         </div>
       </div>

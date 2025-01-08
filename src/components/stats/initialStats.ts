@@ -3,13 +3,11 @@ import {
   TrendingUp, AlertTriangle, Bolt, Award,
   Users, Brain, Shield, Leaf
 } from "lucide-react";
-import { Stat } from "@/types/stats";
 
-export const initialStats: Stat[] = [
+export const initialStats = [
   {
     title: "Total Analyzed",
     value: "0",
-    description: "Total number of products analyzed",
     icon: BarChart3,
     color: "bg-blue-600/10",
     iconColor: "text-blue-600"
@@ -17,7 +15,6 @@ export const initialStats: Stat[] = [
   {
     title: "Healthy Products",
     value: "0",
-    description: "Products classified as healthy",
     icon: CheckCircle,
     color: "bg-green-600/10",
     iconColor: "text-green-600"
