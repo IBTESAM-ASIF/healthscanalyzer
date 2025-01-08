@@ -60,21 +60,56 @@ function generateOAuthHeader(method: string, url: string): string {
 }
 
 async function generateTweetContent(products: any[]): Promise<string> {
-  // Create a more detailed combined tweet for multiple products
-  const productSummaries = products.map(product => {
-    const category = product.category ? `[${product.category.toUpperCase()}]` : '';
-    const keyBenefit = product.pros && product.pros.length > 0 ? `✨ ${product.pros[0]}` : '';
-    return `🏥 ${product.name} ${category}\n💯 Health Score: ${product.health_score}%\n${keyBenefit}`;
-  }).join("\n\n");
+  // Generate engaging hooks based on product categories and scores
+  const getHook = (products: any[]) => {
+    const highestScore = Math.max(...products.map(p => p.health_score || 0));
+    const hasWarning = products.some(p => p.has_serious_adverse_events || p.has_fatal_incidents);
+    
+    if (hasWarning) {
+      return "🚨 HEALTH ALERT: Critical findings in our latest product analysis!";
+    }
+    if (highestScore > 90) {
+      return "🌟 BREAKTHROUGH: Discovered top-tier healthy products you need to know about!";
+    }
+    return "🔬 NEW ANALYSIS: Game-changing health insights revealed!";
+  };
 
+  // Format date for urgency
   const timestamp = new Date().toLocaleString('en-US', { 
     month: 'short', 
-    day: 'numeric', 
-    hour: '2-digit', 
-    minute: '2-digit' 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'UTC'
   });
 
-  return `🤖 AI Health Analysis Update (${timestamp})\n\n${productSummaries}\n\n🔍 Full Analysis: https://healthscanalyzer.ai\n#HealthTech #AI #ProductSafety`;
+  // Create engaging product summaries
+  const productSummaries = products.map(product => {
+    const category = product.category ? `[${product.category.toUpperCase()}]` : '';
+    const score = product.health_score || 0;
+    const scoreEmoji = score > 80 ? '🏆' : score > 60 ? '✅' : '⚠️';
+    
+    // Get the most impactful benefit
+    const keyBenefit = product.pros && product.pros.length > 0 
+      ? `💪 Key benefit: ${product.pros[0]}`
+      : '';
+
+    return `${scoreEmoji} ${product.name} ${category}\n` +
+           `Health Score: ${score}%\n` +
+           `${keyBenefit}`;
+  }).join("\n\n");
+
+  // Construct the tweet with a compelling structure
+  const hook = getHook(products);
+  const websiteUrl = "https://www.healthscanalyzer.com";
+  
+  return `${hook}\n\n` +
+         `${productSummaries}\n\n` +
+         `🕒 Analysis time: ${timestamp} UTC\n` +
+         `\n` +
+         `🔍 Get detailed reports at ${websiteUrl}\n` +
+         `\n` +
+         `#HealthTech #WellnessAI #HealthyLiving #ProductSafety`;
 }
 
 async function sendTweet(tweetText: string): Promise<any> {
