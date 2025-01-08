@@ -28,7 +28,7 @@ const ProductHealthAnalysis = () => {
 
       if (error) {
         console.error('Supabase query error:', error);
-        throw error;
+        throw new Error(error.message || 'Failed to fetch products data');
       }
 
       if (!products) {
@@ -82,7 +82,8 @@ const ProductHealthAnalysis = () => {
           schema: 'public',
           table: 'products'
         },
-        () => {
+        (payload) => {
+          console.log('Received database change:', payload);
           toast({
             title: "Data Updated",
             description: "Product distribution chart has been updated with new data.",
