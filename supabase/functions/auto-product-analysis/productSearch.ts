@@ -13,7 +13,7 @@ export async function searchProducts(openAIApiKey: string) {
   console.log(`[${new Date().toISOString()}] Starting product search phase...`);
   
   try {
-    const systemPrompt = "You are a product research expert. Generate 2 unique consumer products that need health analysis. Return ONLY a valid JSON array of objects with these exact fields: name (string), description (string), category (string: healthy/restricted/harmful), known_ingredients (string array), amazon_url (string), potential_risks (string array), initial_safety_concerns (string array). No markdown formatting or explanation.";
+    const systemPrompt = "You are a product research expert. Generate 3 unique consumer products that need health analysis. Return ONLY a valid JSON array of objects with these exact fields: name (string), description (string), category (string: healthy/restricted/harmful), known_ingredients (string array), amazon_url (string), potential_risks (string array), initial_safety_concerns (string array). Make sure products are diverse and realistic. No markdown formatting or explanation.";
     
     // Calculate input tokens and cost
     const inputTokens = estimateTokens(systemPrompt);
@@ -32,7 +32,8 @@ export async function searchProducts(openAIApiKey: string) {
         messages: [{
           role: "system",
           content: systemPrompt
-        }]
+        }],
+        temperature: 0.8 // Increased for more variety
       })
     });
 
@@ -54,9 +55,13 @@ export async function searchProducts(openAIApiKey: string) {
     console.log(`[${new Date().toISOString()}] Search output cost estimate: $${outputCost.toFixed(6)} (${outputTokens} tokens)`);
     console.log(`[${new Date().toISOString()}] Total search cost estimate: $${(inputCost + outputCost).toFixed(6)}`);
 
-    // Parse the content directly since we explicitly asked for clean JSON
+    // Parse and validate the products
     const products = JSON.parse(content);
     
+    if (!Array.isArray(products) || products.length === 0) {
+      throw new Error('Invalid or empty product list received');
+    }
+
     console.log(`[${new Date().toISOString()}] Found ${products.length} products to analyze`);
     return products;
   } catch (error) {

@@ -21,8 +21,27 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
   console.log(`[${new Date().toISOString()}] Starting deep analysis for: ${product.name}`);
   
   try {
-    const systemPrompt = "You are a product safety expert. Analyze this product and return ONLY a valid JSON object with these exact fields: healthScore (number 0-100), category (string: healthy/restricted/harmful), summary (string), pros (string array), cons (string array), allergyRisks (string array), drugInteractions (string array), populationWarnings (string array), environmentalImpact (string), safetyIncidents (string array). No markdown formatting or explanation.";
-    const userPrompt = `Analyze this product: ${JSON.stringify(product)}`;
+    const systemPrompt = `You are a product safety expert. Analyze this product and return ONLY a valid JSON object with these exact fields: 
+      healthScore (number 0-100), 
+      category (string: healthy/restricted/harmful), 
+      summary (string), 
+      pros (string array), 
+      cons (string array), 
+      allergyRisks (string array), 
+      drugInteractions (string array), 
+      populationWarnings (string array), 
+      environmentalImpact (string), 
+      safetyIncidents (string array), 
+      hasFatalIncidents (boolean), 
+      hasSeriousAdverseEvents (boolean). 
+      Be thorough and realistic in your analysis. No markdown formatting or explanation.`;
+
+    const userPrompt = `Analyze this product thoroughly:
+      Name: ${product.name}
+      Description: ${product.description}
+      Known Ingredients: ${product.known_ingredients?.join(', ')}
+      Initial Safety Concerns: ${product.initial_safety_concerns?.join(', ')}
+      Potential Risks: ${product.potential_risks?.join(', ')}`;
     
     // Calculate input tokens and cost
     const inputTokens = countTokens(systemPrompt + userPrompt);
@@ -45,7 +64,7 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
           role: "user",
           content: userPrompt
         }],
-        max_tokens: 2000
+        temperature: 0.7
       })
     });
 
@@ -68,9 +87,17 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
     console.log(`[${new Date().toISOString()}] Analysis output cost estimate: $${outputCost.toFixed(6)} (${outputTokens} tokens)`);
     console.log(`[${new Date().toISOString()}] Total analysis cost: $${totalCost.toFixed(6)}`);
 
-    // Parse the content and add the cost information
+    // Parse and validate the analysis
     const analysis = JSON.parse(content);
     analysis.analysis_cost = totalCost;
+    
+    // Validate required fields
+    const requiredFields = ['healthScore', 'category', 'summary', 'pros', 'cons'];
+    for (const field of requiredFields) {
+      if (!analysis[field]) {
+        throw new Error(`Missing required field in analysis: ${field}`);
+      }
+    }
     
     console.log(`[${new Date().toISOString()}] Completed deep analysis for: ${product.name}`);
     return analysis;
