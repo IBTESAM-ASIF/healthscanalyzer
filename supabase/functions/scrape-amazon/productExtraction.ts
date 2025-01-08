@@ -3,15 +3,22 @@ export async function extractProductDetails(url: string) {
     console.log(`[${new Date().toISOString()}] Fetching product details from: ${url}`);
     
     const response = await fetch(url);
-    if (!response.ok) throw new Error('Failed to fetch product page');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch product page: ${response.status}`);
+    }
     
     const html = await response.text();
     const doc = new DOMParser().parseFromString(html, 'text/html');
-    if (!doc) throw new Error('Failed to parse HTML');
+    if (!doc) {
+      throw new Error('Failed to parse HTML');
+    }
 
-    // Extract full product name with improved accuracy
+    // Extract product name with improved accuracy
     const productName = doc.querySelector('#productTitle')?.textContent?.trim();
-    
+    if (!productName) {
+      throw new Error('Product name not found');
+    }
+
     // Enhanced company extraction with multiple fallbacks
     let company = '';
     const brandSelectors = [
@@ -35,7 +42,7 @@ export async function extractProductDetails(url: string) {
     }
 
     // Extract description and ingredients with improved parsing
-    const description = doc.querySelector('#productDescription')?.textContent?.trim();
+    const description = doc.querySelector('#productDescription')?.textContent?.trim() || '';
     const ingredientsSection = doc.querySelector('#important-information, #ingredient-information, #ingredients-section')?.textContent || '';
     const ingredients = ingredientsSection
       .toLowerCase()

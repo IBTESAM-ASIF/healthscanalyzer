@@ -15,12 +15,13 @@ serve(async (req) => {
 
   try {
     const { url } = await req.json();
-    if (!url) throw new Error('URL is required');
+    if (!url) {
+      throw new Error('URL is required');
+    }
 
     console.log(`[${new Date().toISOString()}] Processing URL: ${url}`);
     
     const productDetails = await extractProductDetails(url);
-
     if (!productDetails.name || !url) {
       return new Response(
         JSON.stringify({ 
@@ -79,9 +80,12 @@ serve(async (req) => {
         allergy_risks: analysis.allergyRisks || [],
         drug_interactions: analysis.drugInteractions || [],
         special_population_warnings: analysis.specialPopulationWarnings || []
-      }]);
+      }])
+      .select();
 
     if (error) throw error;
+
+    console.log(`[${new Date().toISOString()}] Successfully processed product:`, data);
 
     return new Response(
       JSON.stringify({ success: true, data }),
