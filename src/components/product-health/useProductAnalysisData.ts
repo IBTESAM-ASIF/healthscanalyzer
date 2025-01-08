@@ -1,7 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from '@tanstack/react-query';
+import { Product } from '@/types/product';
 
-export const fetchAnalysisData = async (retryCount: number) => {
+interface DailyData {
+  date: string;
+  healthy: number;
+  restricted: number;
+  harmful: number;
+}
+
+export const fetchAnalysisData = async (retryCount: number): Promise<DailyData[]> => {
   try {
     console.log('Attempting to fetch ALL products for analysis, retry attempt:', retryCount);
 
@@ -17,18 +25,19 @@ export const fetchAnalysisData = async (retryCount: number) => {
       return [];
     }
 
-    console.log('Successfully fetched ALL products for analysis:', products.length);
+    const typedProducts = products as unknown as Pick<Product, 'category' | 'created_at'>[];
+    console.log('Successfully fetched ALL products for analysis:', typedProducts.length);
 
     // Group products by date for the last 10 days
     const endDate = new Date();
-    const dailyData = [];
+    const dailyData: DailyData[] = [];
     
     for (let i = 0; i < 10; i++) {
       const date = new Date(endDate);
       date.setDate(date.getDate() - i);
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
       
-      const dayProducts = products.filter(p => 
+      const dayProducts = typedProducts.filter(p => 
         new Date(p.created_at).toDateString() === date.toDateString()
       );
 
@@ -43,12 +52,14 @@ export const fetchAnalysisData = async (retryCount: number) => {
     return dailyData;
   } catch (error) {
     console.error('Error in fetchAnalysisData:', error);
-    if (error.message?.includes('JWT')) {
-      throw new Error('Authentication expired. Please refresh the page.');
-    } else if (error.message?.includes('timeout')) {
-      throw new Error(`Connection timeout. Please try again. (Attempt ${retryCount + 1})`);
-    } else if (error.message === 'Failed to fetch') {
-      throw new Error('Network connection lost. Please check your internet connection.');
+    if (error instanceof Error) {
+      if (error.message?.includes('JWT')) {
+        throw new Error('Authentication expired. Please refresh the page.');
+      } else if (error.message?.includes('timeout')) {
+        throw new Error(`Connection timeout. Please try again. (Attempt ${retryCount + 1})`);
+      } else if (error.message === 'Failed to fetch') {
+        throw new Error('Network connection lost. Please check your internet connection.');
+      }
     }
     throw error;
   }

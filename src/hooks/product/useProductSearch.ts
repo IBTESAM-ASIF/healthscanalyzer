@@ -21,13 +21,7 @@ export const useProductSearch = () => {
     try {
       setLoading(true);
       console.log('Fetching products with params:', { searchQuery, activeCategory, currentPage, retries });
-      
-      const { data: authData, error: authError } = await supabase.auth.getSession();
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw new Error('Authentication service unavailable');
-      }
-      
+
       let countQuery = supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
@@ -35,7 +29,7 @@ export const useProductSearch = () => {
       if (searchQuery) {
         countQuery = countQuery.ilike('name', `%${searchQuery}%`);
       } else {
-        countQuery = countQuery.eq('category', activeCategory as string);
+        countQuery = countQuery.eq('category', activeCategory);
       }
 
       const { count, error: countError } = await countQuery;
@@ -58,7 +52,7 @@ export const useProductSearch = () => {
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
       } else {
-        query = query.eq('category', activeCategory as string);
+        query = query.eq('category', activeCategory);
       }
 
       const from = (validatedPage - 1) * ITEMS_PER_PAGE;
@@ -107,7 +101,7 @@ export const useProductSearch = () => {
           setProducts(getPaginatedData(sortedPlaceholders, validatedPage));
           setTotalItems(allPlaceholders.length);
         } else {
-          const categoryProducts = (placeholderProducts[activeCategory as keyof typeof placeholderProducts] || [])
+          const categoryProducts = (placeholderProducts[activeCategory] || [])
             .map(product => ({
               ...product,
               created_at: new Date().toISOString(),
@@ -118,7 +112,8 @@ export const useProductSearch = () => {
           setTotalItems(categoryProducts.length);
         }
       } else {
-        setProducts(data as Product[]);
+        const typedData = data as unknown as Product[];
+        setProducts(typedData);
         setTotalItems(count || 0);
       }
     } catch (error: any) {
