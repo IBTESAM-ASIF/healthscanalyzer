@@ -29,6 +29,14 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
         "hasFatalIncidents": boolean,
         "hasSeriousAdverseEvents": boolean
       }
+      
+      IMPORTANT CATEGORIZATION RULES:
+      - If hasFatalIncidents is true OR hasSeriousAdverseEvents is true, category MUST be "harmful"
+      - If allergyRisks or drugInteractions are not empty, category MUST be "restricted" or "harmful"
+      - Only products with NO safety concerns can be "healthy"
+      - healthScore must be below 50 for "harmful" products
+      - healthScore must be below 85 for "restricted" products
+      
       Be thorough and realistic. Return ONLY valid JSON.`;
 
     const userPrompt = `Product Details:
@@ -73,9 +81,7 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
       throw new Error('No content received from OpenAI');
     }
 
-    // Validate JSON before parsing
     let cleanedContent = content.trim();
-    // Remove any markdown code block markers if present
     cleanedContent = cleanedContent.replace(/```json\n?|\n?```/g, '');
     
     console.log(`[${new Date().toISOString()}] Raw analysis response:`, cleanedContent);
@@ -90,12 +96,22 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
     console.log(`[${new Date().toISOString()}] Analysis output cost: $${outputCost.toFixed(6)} (${outputTokens} tokens)`);
     console.log(`[${new Date().toISOString()}] Total analysis cost: $${totalCost.toFixed(6)}`);
 
-    // Validate and sanitize the analysis object
+    // Enforce categorization rules
+    let category = analysis.category?.toLowerCase();
+    const hasSafetyIssues = analysis.hasFatalIncidents || analysis.hasSeriousAdverseEvents;
+    const hasWarnings = (analysis.allergyRisks?.length > 0 || analysis.drugInteractions?.length > 0);
+    
+    if (hasSafetyIssues) {
+      category = 'harmful';
+      analysis.healthScore = Math.min(analysis.healthScore, 49); // Ensure score reflects harmful status
+    } else if (hasWarnings) {
+      category = category === 'harmful' ? 'harmful' : 'restricted';
+      analysis.healthScore = Math.min(analysis.healthScore, 84); // Ensure score reflects restricted status
+    }
+
     const sanitizedAnalysis = {
       healthScore: Number(analysis.healthScore) || 0,
-      category: ['healthy', 'restricted', 'harmful'].includes(analysis.category?.toLowerCase()) 
-        ? analysis.category.toLowerCase() 
-        : 'restricted',
+      category,
       summary: String(analysis.summary || ''),
       pros: Array.isArray(analysis.pros) ? analysis.pros.map(String) : [],
       cons: Array.isArray(analysis.cons) ? analysis.cons.map(String) : [],
@@ -110,6 +126,14 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
     };
     
     console.log(`[${new Date().toISOString()}] Completed analysis for: ${product.name}`);
+    console.log('Final categorization:', {
+      name: product.name,
+      category: sanitizedAnalysis.category,
+      healthScore: sanitizedAnalysis.healthScore,
+      hasSafetyIssues,
+      hasWarnings
+    });
+    
     return sanitizedAnalysis;
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error in analyzeProduct:`, error);

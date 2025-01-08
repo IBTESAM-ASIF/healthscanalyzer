@@ -14,12 +14,19 @@ export const useStats = () => {
   const fetchStats = async () => {
     try {
       setIsLoading(true);
+      console.log('Fetching stats...');
+      
       const { data: products, error } = await supabase
         .from('products')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw error;
+      }
+
+      console.log('Fetched products:', products?.length);
 
       if (!products || products.length === 0) {
         setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
@@ -27,9 +34,26 @@ export const useStats = () => {
         return;
       }
 
+      // Log any potentially miscategorized products
+      const potentialIssues = products.filter(p => {
+        const hasWarnings = p.has_fatal_incidents || p.has_serious_adverse_events;
+        const isHealthy = p.category === 'healthy';
+        return hasWarnings && isHealthy;
+      });
+
+      if (potentialIssues.length > 0) {
+        console.warn('Found potentially miscategorized products:', potentialIssues);
+        toast({
+          title: "Warning",
+          description: "Found products marked as healthy but with safety warnings. Please review.",
+          variant: "destructive",
+        });
+      }
+
       const calculatedStats = calculateStats(products);
       
       if (calculatedStats) {
+        console.log('Calculated new stats:', calculatedStats);
         setStats(prev => prev.map(stat => {
           switch(stat.title) {
             case "Total Analyzed":
@@ -62,7 +86,7 @@ export const useStats = () => {
         }));
       }
     } catch (error) {
-      console.error('Error fetching stats:', error);
+      console.error('Error in fetchStats:', error);
       toast({
         title: "Error",
         description: "Failed to fetch statistics. Please try again later.",
@@ -76,8 +100,13 @@ export const useStats = () => {
   const { subscribeToStats } = useStatsSubscription(fetchStats);
 
   useEffect(() => {
+    console.log('Setting up stats subscription...');
     fetchStats();
-    return subscribeToStats();
+    const cleanup = subscribeToStats();
+    return () => {
+      console.log('Cleaning up stats subscription...');
+      cleanup();
+    };
   }, []);
 
   return { stats, isLoading };
