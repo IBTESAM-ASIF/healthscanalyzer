@@ -60,21 +60,32 @@ function generateOAuthHeader(method: string, url: string): string {
 }
 
 async function generateTweetContent(products: any[]): Promise<string> {
-  // Generate engaging hooks based on product categories and scores
+  // Generate dynamic, engaging hooks based on product analysis
   const getHook = (products: any[]) => {
     const highestScore = Math.max(...products.map(p => p.health_score || 0));
     const hasWarning = products.some(p => p.has_serious_adverse_events || p.has_fatal_incidents);
+    const totalBenefits = products.reduce((acc, p) => acc + (p.pros?.length || 0), 0);
     
+    // Dynamic hooks based on product characteristics
     if (hasWarning) {
-      return "🚨 HEALTH ALERT: Critical findings in our latest product analysis!";
+      return "🚨 URGENT HEALTH ALERT: Must-know findings about products you might be using!";
     }
     if (highestScore > 90) {
-      return "🌟 BREAKTHROUGH: Discovered top-tier healthy products you need to know about!";
+      return "🌟 BREAKTHROUGH DISCOVERY: We found products that could revolutionize your health!";
     }
-    return "🔬 NEW ANALYSIS: Game-changing health insights revealed!";
+    if (totalBenefits > 5) {
+      return "💪 GAME-CHANGER ALERT: Multiple health benefits discovered in latest analysis!";
+    }
+    const hooks = [
+      "🔬 EXCLUSIVE: AI reveals shocking truths about everyday products!",
+      "🎯 HEALTH HACK: Smart consumers need to see these results!",
+      "⚡️ TRENDING NOW: Revolutionary health insights you can't miss!",
+      "🌿 WELLNESS ALERT: Transform your health with these findings!"
+    ];
+    return hooks[Math.floor(Math.random() * hooks.length)];
   };
 
-  // Format date for urgency
+  // Format date for global audience
   const timestamp = new Date().toLocaleString('en-US', { 
     month: 'short', 
     day: 'numeric',
@@ -83,33 +94,45 @@ async function generateTweetContent(products: any[]): Promise<string> {
     timeZone: 'UTC'
   });
 
-  // Create engaging product summaries
+  // Create compelling product summaries with emojis and formatting
   const productSummaries = products.map(product => {
     const category = product.category ? `[${product.category.toUpperCase()}]` : '';
     const score = product.health_score || 0;
-    const scoreEmoji = score > 80 ? '🏆' : score > 60 ? '✅' : '⚠️';
     
-    // Get the most impactful benefit
+    // Dynamic score indicators
+    const scoreEmoji = score > 90 ? '🏆' : 
+                      score > 80 ? '⭐️' : 
+                      score > 70 ? '✅' : 
+                      score > 50 ? '⚠️' : '❗️';
+    
+    // Get the most impactful benefit with emoji enhancement
     const keyBenefit = product.pros && product.pros.length > 0 
-      ? `💪 Key benefit: ${product.pros[0]}`
+      ? `💡 Key benefit: ${product.pros[0]}`
       : '';
+
+    // Warning indicator for critical products
+    const warningLabel = (product.has_fatal_incidents || product.has_serious_adverse_events)
+      ? "⚠️ IMPORTANT SAFETY NOTICE"
+      : "";
 
     return `${scoreEmoji} ${product.name} ${category}\n` +
            `Health Score: ${score}%\n` +
-           `${keyBenefit}`;
+           `${keyBenefit}\n` +
+           `${warningLabel}`;
   }).join("\n\n");
 
-  // Construct the tweet with a compelling structure
-  const hook = getHook(products);
+  // Craft compelling call-to-action
   const websiteUrl = "https://www.healthscanalyzer.com";
+  const hook = getHook(products);
   
+  // Construct tweet with optimal formatting and engagement elements
   return `${hook}\n\n` +
          `${productSummaries}\n\n` +
-         `🕒 Analysis time: ${timestamp} UTC\n` +
+         `🕒 Latest Analysis: ${timestamp} UTC\n` +
          `\n` +
-         `🔍 Get detailed reports at ${websiteUrl}\n` +
+         `🔍 Get your FREE health report at ${websiteUrl}\n` +
          `\n` +
-         `#HealthTech #WellnessAI #HealthyLiving #ProductSafety`;
+         `#HealthTech #AI #WellnessRevolution #HealthyLiving #ProductSafety #FutureOfHealth`;
 }
 
 async function sendTweet(tweetText: string): Promise<any> {
