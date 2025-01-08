@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { initialStats } from '@/components/stats/initialStats';
@@ -32,7 +32,7 @@ export const useStats = () => {
     refetchOnWindowFocus: false,
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!products || products.length === 0) {
       setStats(prev => prev.map(stat => ({ ...stat, value: '0' })));
       return;
