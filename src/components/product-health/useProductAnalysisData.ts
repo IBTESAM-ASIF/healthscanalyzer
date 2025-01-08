@@ -3,21 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 
 export const fetchAnalysisData = async (retryCount: number) => {
   try {
-    const endDate = new Date();
-    const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - 10);
-
-    console.log('Attempting to fetch data with date range:', {
-      startDate: startDate.toISOString(),
-      endDate: endDate.toISOString(),
-      retryAttempt: retryCount
-    });
+    console.log('Attempting to fetch ALL products for analysis, retry attempt:', retryCount);
 
     const { data: products, error } = await supabase
       .from('products')
       .select('category, created_at')
-      .gte('created_at', startDate.toISOString())
-      .lte('created_at', endDate.toISOString());
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
 
@@ -26,9 +17,12 @@ export const fetchAnalysisData = async (retryCount: number) => {
       return [];
     }
 
-    console.log('Successfully fetched products:', products.length);
+    console.log('Successfully fetched ALL products for analysis:', products.length);
 
+    // Group products by date for the last 10 days
+    const endDate = new Date();
     const dailyData = [];
+    
     for (let i = 0; i < 10; i++) {
       const date = new Date(endDate);
       date.setDate(date.getDate() - i);
