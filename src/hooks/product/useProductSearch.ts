@@ -27,18 +27,32 @@ export const useProductSearch = () => {
 
       if (totalCountError) throw totalCountError;
 
-      // Get count for current category or search
-      let countQuery = supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true });
+      // Build the query based on category and safety status
+      let query = supabase.from('products').select('*');
 
       if (searchQuery) {
-        countQuery = countQuery.ilike('name', `%${searchQuery}%`);
+        query = query.ilike('name', `%${searchQuery}%`);
       } else {
-        countQuery = countQuery.eq('category', activeCategory);
+        if (activeCategory === 'harmful') {
+          // For harmful category, include products with safety alerts OR harmful category
+          query = query.or(`category.eq.harmful,has_fatal_incidents.eq.true,has_serious_adverse_events.eq.true`);
+        } else if (activeCategory === 'restricted') {
+          // For restricted, exclude products with safety alerts
+          query = query
+            .eq('category', 'restricted')
+            .eq('has_fatal_incidents', false)
+            .eq('has_serious_adverse_events', false);
+        } else {
+          // For healthy, exclude products with safety alerts
+          query = query
+            .eq('category', 'healthy')
+            .eq('has_fatal_incidents', false)
+            .eq('has_serious_adverse_events', false);
+        }
       }
 
-      const { count, error: countError } = await countQuery;
+      // Get count for current filtered view
+      const { count, error: countError } = await query.count();
       
       if (countError) throw countError;
       
@@ -48,17 +62,6 @@ export const useProductSearch = () => {
       const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
       const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
       
-      // Now fetch the actual data with validated page number
-      let query = supabase
-        .from('products')
-        .select('*');
-
-      if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      } else {
-        query = query.eq('category', activeCategory);
-      }
-
       const from = (validatedPage - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
       
@@ -107,7 +110,12 @@ export const useProductSearch = () => {
         }
       } else {
         console.log('Data fetched successfully:', data.length, 'items');
-        setProducts(data);
+        // Post-process the data to ensure safety alerts are properly categorized
+        const processedData = data.map(product => ({
+          ...product,
+          category: (product.has_fatal_incidents || product.has_serious_adverse_events) ? 'harmful' : product.category
+        }));
+        setProducts(processedData);
         setTotalItems(count || 0);
       }
     } catch (error) {
