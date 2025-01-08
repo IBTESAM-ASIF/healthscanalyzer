@@ -1,133 +1,93 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Product, ProductCategory } from '@/types/product';
-import { placeholderProducts } from '@/components/product/placeholderData';
-import _ from 'lodash';
-import { ITEMS_PER_PAGE, getPaginatedData } from '@/utils/pagination';
+import { useToast } from "@/components/ui/use-toast";
+import { ProductCategory } from '@/types/product';
 
 export const useProductSearch = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
   const { toast } = useToast();
 
-  const fetchProducts = useCallback(async (
+  const fetchProducts = async (
     searchQuery: string,
-    activeCategory: ProductCategory,
-    currentPage: number
+    category: ProductCategory,
+    page: number,
+    retryCount = 0
   ) => {
     try {
       setLoading(true);
-      
-      // First, get the total count for all categories
-      const { count: totalCount, error: totalCountError } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true });
+      console.log('Fetching products with params:', { searchQuery, category, page });
 
-      if (totalCountError) throw totalCountError;
+      // Calculate pagination
+      const itemsPerPage = 6;
+      const offset = (page - 1) * itemsPerPage;
 
-      // Get count for current category or search
-      let countQuery = supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true });
-
-      if (searchQuery) {
-        countQuery = countQuery.ilike('name', `%${searchQuery}%`);
-      } else {
-        countQuery = countQuery.eq('category', activeCategory);
-      }
-
-      const { count, error: countError } = await countQuery;
-      
-      if (countError) throw countError;
-      
-      console.log(`Total products across all categories: ${totalCount}`);
-      console.log(`Products in current view: ${count}`);
-      
-      const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
-      const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
-      
-      // Now fetch the actual data with validated page number
+      // Build query
       let query = supabase
         .from('products')
-        .select('*');
+        .select('*', { count: 'exact' });
 
-      if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`);
-      } else {
-        query = query.eq('category', activeCategory);
+      // Apply category filter
+      if (category) {
+        query = query.eq('category', category);
       }
 
-      const from = (validatedPage - 1) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-      
-      const { data, error } = await query
+      // Apply search filter if present
+      if (searchQuery) {
+        query = query.ilike('name', `%${searchQuery}%`);
+      }
+
+      // Add ordering and pagination
+      query = query
         .order('created_at', { ascending: false })
-        .range(from, to);
-      
+        .range(offset, offset + itemsPerPage - 1);
+
+      // Execute query
+      const { data, error, count } = await query;
+
       if (error) {
-        console.error('Supabase query error:', error);
         throw error;
       }
 
-      if (!data || data.length === 0) {
-        console.log('No data found, using placeholders');
-        if (searchQuery) {
-          const allPlaceholders = [
-            ...placeholderProducts.healthy,
-            ...placeholderProducts.restricted,
-            ...placeholderProducts.harmful
-          ]
-          .filter(product => 
-            product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (product.ingredients && product.ingredients.some(ing => 
-              ing.toLowerCase().includes(searchQuery.toLowerCase())
-            ))
-          )
-          .map(product => ({
-            ...product,
-            created_at: new Date().toISOString(),
-            category: product.category as ProductCategory
-          }));
+      console.log('Products fetched successfully:', {
+        count,
+        resultsCount: data?.length,
+        page,
+        category
+      });
 
-          const sortedPlaceholders = _.orderBy(allPlaceholders, ['created_at'], ['desc']);
-          setProducts(getPaginatedData(sortedPlaceholders, validatedPage));
-          setTotalItems(allPlaceholders.length);
-        } else {
-          const categoryProducts = (placeholderProducts[activeCategory as keyof typeof placeholderProducts] || [])
-            .map(product => ({
-              ...product,
-              created_at: new Date().toISOString(),
-              category: product.category as ProductCategory
-            }));
-          const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
-          setProducts(getPaginatedData(sortedCategoryProducts, validatedPage));
-          setTotalItems(categoryProducts.length);
-        }
-      } else {
-        console.log('Data fetched successfully:', data.length, 'items');
-        setProducts(data);
-        setTotalItems(count || 0);
-      }
-    } catch (error) {
+      setProducts(data || []);
+      setTotalItems(count || 0);
+
+    } catch (error: any) {
       console.error('Error fetching products:', error);
+
+      // Retry logic for network errors
+      if (retryCount < 3 && error.message === "Failed to fetch") {
+        console.log(`Retrying fetch attempt ${retryCount + 1}/3...`);
+        setTimeout(() => {
+          fetchProducts(searchQuery, category, page, retryCount + 1);
+        }, 1000 * (retryCount + 1)); // Exponential backoff
+        return;
+      }
+
+      // Show user-friendly error message
       toast({
-        title: "Error",
-        description: "Failed to fetch products. Please try again later.",
+        title: "Error Loading Products",
+        description: "We're having trouble connecting to our servers. Please check your internet connection and try again.",
         variant: "destructive",
       });
-      setProducts([]);
-      setTotalItems(0);
+
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   return {
     products,
     loading,
     totalItems,
-    fetchProducts
+    fetchProducts,
   };
 };
