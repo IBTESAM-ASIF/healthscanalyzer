@@ -18,6 +18,7 @@ export const calculateStats = (products: Product[]) => {
     p => p.has_fatal_incidents || p.has_serious_adverse_events
   ).length;
 
+  // Calculate exact average analysis cost
   const avgAnalysisCost = products.length > 0
     ? (products.reduce((acc, curr) => acc + (curr.analysis_cost || 0), 0) / totalAnalyzed).toFixed(6)
     : '0.000000';
