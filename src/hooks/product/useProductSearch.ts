@@ -20,7 +20,14 @@ export const useProductSearch = () => {
     try {
       setLoading(true);
       
-      // First, get the total count
+      // First, get the total count for all categories
+      const { count: totalCount, error: totalCountError } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      if (totalCountError) throw totalCountError;
+
+      // Get count for current category or search
       let countQuery = supabase
         .from('products')
         .select('*', { count: 'exact', head: true });
@@ -34,6 +41,9 @@ export const useProductSearch = () => {
       const { count, error: countError } = await countQuery;
       
       if (countError) throw countError;
+      
+      console.log(`Total products across all categories: ${totalCount}`);
+      console.log(`Products in current view: ${count}`);
       
       const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
       const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
