@@ -6,25 +6,20 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: true,
-    storageKey: 'supabase.auth.token',
+    flowType: 'pkce',
   },
   global: {
     headers: {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
     },
-  },
-  db: {
-    schema: 'public'
   },
   realtime: {
     params: {
-      eventsPerSecond: 10
+      eventsPerSecond: 10,
     }
   }
 });
@@ -36,5 +31,18 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('User signed out');
   } else if (event === 'SIGNED_IN') {
     console.log('User signed in:', session?.user?.id);
+  } else if (event === 'TOKEN_REFRESHED') {
+    console.log('Token refreshed successfully');
+  } else if (event === 'USER_UPDATED') {
+    console.log('User data updated');
+  }
+});
+
+// Handle auth errors globally
+supabase.auth.onError((error) => {
+  console.error('Auth error:', error);
+  if (error.message.includes('JWT')) {
+    console.log('JWT error detected, attempting to refresh session...');
+    supabase.auth.refreshSession();
   }
 });
