@@ -19,23 +19,40 @@ export const useProductSearch = () => {
   ) => {
     try {
       setLoading(true);
+      
+      // First, get the total count
+      let countQuery = supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true });
+
+      if (searchQuery) {
+        countQuery = countQuery.ilike('name', `%${searchQuery}%`);
+      } else {
+        countQuery = countQuery.eq('category', activeCategory);
+      }
+
+      const { count, error: countError } = await countQuery;
+      
+      if (countError) throw countError;
+      
+      const totalPages = Math.ceil((count || 0) / ITEMS_PER_PAGE);
+      const validatedPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+      
+      // Now fetch the actual data with validated page number
       let query = supabase
         .from('products')
-        .select('*', { count: 'exact' });
+        .select('*');
 
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`);
-      }
-      
-      if (!searchQuery) {
+      } else {
         query = query.eq('category', activeCategory);
       }
 
-      // Add pagination
-      const from = (currentPage - 1) * ITEMS_PER_PAGE;
+      const from = (validatedPage - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
       
-      const { data, error, count } = await query
+      const { data, error } = await query
         .order('created_at', { ascending: false })
         .range(from, to);
       
@@ -65,7 +82,7 @@ export const useProductSearch = () => {
           }));
 
           const sortedPlaceholders = _.orderBy(allPlaceholders, ['created_at'], ['desc']);
-          setProducts(getPaginatedData(sortedPlaceholders, currentPage));
+          setProducts(getPaginatedData(sortedPlaceholders, validatedPage));
           setTotalItems(allPlaceholders.length);
         } else {
           const categoryProducts = (placeholderProducts[activeCategory as keyof typeof placeholderProducts] || [])
@@ -75,7 +92,7 @@ export const useProductSearch = () => {
               category: product.category as ProductCategory
             }));
           const sortedCategoryProducts = _.orderBy(categoryProducts, ['created_at'], ['desc']);
-          setProducts(getPaginatedData(sortedCategoryProducts, currentPage));
+          setProducts(getPaginatedData(sortedCategoryProducts, validatedPage));
           setTotalItems(categoryProducts.length);
         }
       } else {
@@ -90,6 +107,8 @@ export const useProductSearch = () => {
         description: "Failed to fetch products. Please try again later.",
         variant: "destructive",
       });
+      setProducts([]);
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }

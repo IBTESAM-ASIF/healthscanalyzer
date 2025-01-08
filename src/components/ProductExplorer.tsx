@@ -20,7 +20,15 @@ const ProductExplorer = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchProducts(searchQuery, activeCategory, currentPage);
+    const totalPages = getTotalPages(totalItems);
+    const validPage = Math.min(Math.max(1, currentPage), totalPages || 1);
+    
+    if (validPage !== currentPage) {
+      setCurrentPage(validPage);
+      return;
+    }
+
+    fetchProducts(searchQuery, activeCategory, validPage);
 
     const channel = supabase
       .channel('schema-db-changes')
@@ -32,7 +40,7 @@ const ProductExplorer = () => {
           table: 'products'
         },
         _.debounce(() => {
-          fetchProducts(searchQuery, activeCategory, currentPage);
+          fetchProducts(searchQuery, activeCategory, validPage);
           toast({
             title: "Products Updated",
             description: "New product analysis data available.",
@@ -44,10 +52,12 @@ const ProductExplorer = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeCategory, searchQuery, currentPage]);
+  }, [activeCategory, searchQuery, currentPage, totalItems]);
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    const totalPages = getTotalPages(totalItems);
+    const validPage = Math.min(Math.max(1, page), totalPages || 1);
+    setCurrentPage(validPage);
   };
 
   return (
