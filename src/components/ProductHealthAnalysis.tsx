@@ -1,18 +1,16 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from '@tanstack/react-query';
-import { Skeleton } from "@/components/ui/skeleton";
-import { Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ProductHealthChart } from './product-health/ProductHealthChart';
+import { CategoryDescriptions } from './product-health/CategoryDescriptions';
 
 const ProductHealthAnalysis = () => {
   const { toast } = useToast();
 
   const fetchAnalysisData = async () => {
     try {
-      // Calculate date range for the last 10 days
       const endDate = new Date();
       const startDate = new Date(endDate);
       startDate.setDate(startDate.getDate() - 10);
@@ -98,30 +96,15 @@ const ProductHealthAnalysis = () => {
     };
   }, [toast]);
 
-  if (isError) {
-    console.error('Query error:', error);
+  if (isError && error instanceof Error) {
     return (
       <Alert variant="destructive" className="m-4">
         <AlertDescription>
-          Failed to fetch analysis data. Please try again later.
+          {error.message || 'Failed to fetch analysis data. Please try again later.'}
         </AlertDescription>
       </Alert>
     );
   }
-
-  const LoadingState = () => (
-    <div className="flex flex-col items-center justify-center space-y-4 min-h-[300px]">
-      <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      <p className="text-sm text-muted-foreground">Loading analysis data...</p>
-    </div>
-  );
-
-  const LoadingCard = () => (
-    <div className="glass-effect rounded-xl p-6 space-y-4">
-      <Skeleton className="h-6 w-3/4" />
-      <Skeleton className="h-[300px] w-full" />
-    </div>
-  );
 
   return (
     <section id="product-analysis" className="py-12 relative overflow-hidden">
@@ -134,86 +117,16 @@ const ProductHealthAnalysis = () => {
         </h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {isLoading ? (
-            <LoadingCard />
-          ) : (
-            <div className="glass-effect rounded-xl p-6">
-              <h3 className="text-xl font-semibold mb-4 text-white">10-Day Product Distribution</h3>
-              <div className="h-[300px] w-full">
-                {data && data.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-                      <XAxis 
-                        dataKey="date" 
-                        stroke="rgba(255,255,255,0.5)"
-                        tick={{ fill: 'rgba(255,255,255,0.5)' }}
-                      />
-                      <YAxis 
-                        stroke="rgba(255,255,255,0.5)"
-                        tick={{ fill: 'rgba(255,255,255,0.5)' }}
-                      />
-                      <Bar 
-                        dataKey="healthy" 
-                        stackId="a" 
-                        fill="#4ade80" 
-                        name="Healthy Products"
-                      />
-                      <Bar 
-                        dataKey="restricted" 
-                        stackId="a" 
-                        fill="#fbbf24" 
-                        name="Restricted Use"
-                      />
-                      <Bar 
-                        dataKey="harmful" 
-                        stackId="a" 
-                        fill="#f87171" 
-                        name="Harmful Products"
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-gray-400">No data available for the selected period</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Categories Description */}
-          <div className="space-y-6">
-            {/* Healthy Products */}
-            <div className="glass-effect rounded-xl p-6 transition-all duration-300 hover:bg-opacity-10">
-              <h3 className="text-2xl font-semibold mb-2 text-emerald-400">
-                Healthy Products
-              </h3>
-              <p className="text-gray-300">
-                Products that are safe and beneficial for daily consumption, with high nutritional value.
-              </p>
-            </div>
-
-            {/* Restricted Use */}
-            <div className="glass-effect rounded-xl p-6 transition-all duration-300 hover:bg-opacity-10">
-              <h3 className="text-2xl font-semibold mb-2 text-amber-400">
-                Restricted Use
-              </h3>
-              <p className="text-gray-300">
-                Products that should be consumed in moderation or with certain precautions.
-              </p>
-            </div>
-
-            {/* Harmful Products */}
-            <div className="glass-effect rounded-xl p-6 transition-all duration-300 hover:bg-opacity-10">
-              <h3 className="text-2xl font-semibold mb-2 text-red-400">
-                Harmful Products
-              </h3>
-              <p className="text-gray-300">
-                Products that may pose health risks and should be avoided or used with extreme caution.
-              </p>
-            </div>
+          <div className="glass-effect rounded-xl p-6">
+            <h3 className="text-xl font-semibold mb-4 text-white">10-Day Product Distribution</h3>
+            <ProductHealthChart 
+              data={data} 
+              isLoading={isLoading}
+              isError={isError}
+            />
           </div>
+
+          <CategoryDescriptions />
         </div>
       </div>
     </section>
