@@ -48,7 +48,7 @@ export const useProductSearch = () => {
 
       // Execute query with timeout
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout')), 10000);
+        setTimeout(() => reject(new Error('Request timeout')), 15000); // Increased timeout to 15 seconds
       });
 
       const { data, error, count } = await Promise.race([
@@ -76,7 +76,7 @@ export const useProductSearch = () => {
         code: error.code
       });
 
-      // Retry logic for network errors
+      // Retry logic for network errors with exponential backoff
       if (retryCount < 3 && (error.message === "Failed to fetch" || error.message === "Request timeout")) {
         console.log(`Retrying fetch attempt ${retryCount + 1}/3...`);
         await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, retryCount)));

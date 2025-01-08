@@ -31,21 +31,29 @@ export const supabase = createClient<Database>(
   }
 );
 
-// Add error handling utility
+// Enhanced error handling utility
 export const handleSupabaseError = (error: any) => {
+  // Log detailed error information for debugging
   console.error('Supabase Error:', {
     message: error.message,
     details: error.details,
     hint: error.hint,
-    code: error.code
+    code: error.code,
+    url: error.url,
+    method: error.method,
+    stack: error.stack
   });
   
   if (error.message === "Failed to fetch") {
-    return "Network error. Please check your internet connection.";
+    return "Network error. Please check your internet connection and try again in a few moments.";
   }
   
   if (error.code === "PGRST116") {
     return "Invalid query parameters. Please try again.";
+  }
+
+  if (error.message === "Request timeout") {
+    return "The request timed out. Please try again.";
   }
   
   return "An unexpected error occurred. Please try again later.";
