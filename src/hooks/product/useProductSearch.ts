@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { ProductCategory } from '@/types/product';
 
 export const useProductSearch = () => {
@@ -43,10 +43,14 @@ export const useProductSearch = () => {
         .order('created_at', { ascending: false })
         .range(offset, offset + itemsPerPage - 1);
 
+      // Log the generated URL for debugging
+      console.log('Generated Supabase query:', query);
+
       // Execute query
       const { data, error, count } = await query;
 
       if (error) {
+        console.error('Supabase error:', error);
         throw error;
       }
 
@@ -61,18 +65,22 @@ export const useProductSearch = () => {
       setTotalItems(count || 0);
 
     } catch (error: any) {
-      console.error('Error fetching products:', error);
+      console.error('Error fetching products:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
 
       // Retry logic for network errors
       if (retryCount < 3 && error.message === "Failed to fetch") {
         console.log(`Retrying fetch attempt ${retryCount + 1}/3...`);
         setTimeout(() => {
           fetchProducts(searchQuery, category, page, retryCount + 1);
-        }, 1000 * (retryCount + 1)); // Exponential backoff
+        }, 1000 * Math.pow(2, retryCount)); // Exponential backoff
         return;
       }
 
-      // Show user-friendly error message
       toast({
         title: "Error Loading Products",
         description: "We're having trouble connecting to our servers. Please check your internet connection and try again.",
