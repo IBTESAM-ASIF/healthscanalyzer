@@ -1,17 +1,14 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { createHmac } from "node:crypto";
 
-// Initialize Supabase client
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Twitter API configuration
 const API_KEY = Deno.env.get("TWITTER_CONSUMER_KEY")?.trim();
 const API_SECRET = Deno.env.get("TWITTER_CONSUMER_SECRET")?.trim();
 const ACCESS_TOKEN = Deno.env.get("TWITTER_ACCESS_TOKEN")?.trim();
 const ACCESS_TOKEN_SECRET = Deno.env.get("TWITTER_ACCESS_TOKEN_SECRET")?.trim();
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
 function generateOAuthSignature(
   method: string,
@@ -62,41 +59,13 @@ function generateOAuthHeader(method: string, url: string): string {
   );
 }
 
-async function generateTweetContent(product: any): Promise<string> {
-  const prompt = `Create an engaging tweet about this product analysis:
-Product: ${product.name}
-Health Score: ${product.health_score}
-Category: ${product.category}
-Key Benefits: ${product.pros?.join(", ")}
+async function generateTweetContent(products: any[]): Promise<string> {
+  // Create a combined tweet for multiple products
+  const productSummaries = products.map(product => 
+    `${product.name} (Health Score: ${product.health_score}%)`
+  ).join("\n");
 
-The tweet should be promotional, include emojis, and highlight the AI analysis aspect.
-Include these hashtags: #BREAKING #CryptoNews #HealthTech
-Keep it under 280 characters.`;
-
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content: "You are a social media expert creating engaging tweets.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: 0.7,
-    }),
-  });
-
-  const data = await response.json();
-  return data.choices[0].message.content;
+  return `🔬 New Product Analysis Alert!\n\n${productSummaries}\n\n#HealthTech #ProductSafety\nMore details: https://x.com/healthscanai`;
 }
 
 async function sendTweet(tweetText: string): Promise<any> {
@@ -122,30 +91,32 @@ async function sendTweet(tweetText: string): Promise<any> {
 
 Deno.serve(async (req) => {
   try {
-    const { product_id } = await req.json();
-
-    // Fetch product details
-    const { data: product, error } = await supabase
+    // Get the last 2 products added
+    const { data: products, error } = await supabase
       .from("products")
       .select("*")
-      .eq("id", product_id)
-      .single();
+      .order('created_at', { ascending: false })
+      .limit(2);
 
     if (error) throw error;
 
-    // Generate tweet content using GPT
-    const tweetContent = await generateTweetContent(product);
+    if (!products || products.length === 0) {
+      return new Response(
+        JSON.stringify({ message: "No new products to tweet about" }),
+        { headers: { "Content-Type": "application/json" } }
+      );
+    }
 
-    // Post tweet
+    // Generate and send a single tweet for all products
+    const tweetContent = await generateTweetContent(products);
     await sendTweet(tweetContent);
 
     return new Response(
       JSON.stringify({ message: "Tweet posted successfully" }),
-      {
-        headers: { "Content-Type": "application/json" },
-      }
+      { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
+    console.error('Error in tweet-new-product function:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {
