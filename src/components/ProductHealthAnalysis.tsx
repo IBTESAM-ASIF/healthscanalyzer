@@ -5,10 +5,12 @@ import { useQuery } from '@tanstack/react-query';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ProductHealthChart } from './product-health/ProductHealthChart';
 import { CategoryDescriptions } from './product-health/CategoryDescriptions';
-import { AlertCircle, DatabaseIcon } from 'lucide-react';
+import { AlertCircle, DatabaseIcon, RefreshCw } from 'lucide-react';
+import { Button } from './ui/button';
 
 const ProductHealthAnalysis = () => {
   const { toast } = useToast();
+  const [retryCount, setRetryCount] = React.useState(0);
 
   const fetchAnalysisData = async () => {
     try {
@@ -16,38 +18,58 @@ const ProductHealthAnalysis = () => {
       const startDate = new Date(endDate);
       startDate.setDate(startDate.getDate() - 10);
 
-      console.log('Fetching data with date range:', {
+      console.log('Attempting to fetch data with date range:', {
         startDate: startDate.toISOString(),
-        endDate: endDate.toISOString()
+        endDate: endDate.toISOString(),
+        retryAttempt: retryCount
       });
 
-      // First check auth status
-      const { data: session, error: authError } = await supabase.auth.getSession();
-      if (authError) {
-        console.error('Auth error:', authError);
-        throw new Error('Authentication service unavailable. Please try again later.');
-      }
+      // First check auth status with timeout
+      const authPromise = new Promise(async (resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Authentication service timeout'));
+        }, 5000);
 
-      const { data: products, error } = await supabase
-        .from('products')
-        .select('category, created_at')
-        .gte('created_at', startDate.toISOString())
-        .lte('created_at', endDate.toISOString());
-
-      if (error) {
-        console.error('Supabase query error:', error);
-        if (error.message?.includes('JWT')) {
-          throw new Error('Authentication error. Please sign in again.');
+        try {
+          const { data: session, error: authError } = await supabase.auth.getSession();
+          clearTimeout(timeout);
+          if (authError) throw authError;
+          resolve(session);
+        } catch (error) {
+          clearTimeout(timeout);
+          reject(error);
         }
-        throw new Error(
-          error.message === 'Failed to fetch' 
-            ? 'Unable to connect to the database. Please check your connection and try again.'
-            : error.message || 'Failed to fetch products data'
-        );
-      }
+      });
 
-      if (!products) {
-        console.log('No products found');
+      await authPromise;
+
+      // Fetch products with timeout
+      const productsPromise = new Promise(async (resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('Database connection timeout'));
+        }, 5000);
+
+        try {
+          const { data: products, error } = await supabase
+            .from('products')
+            .select('category, created_at')
+            .gte('created_at', startDate.toISOString())
+            .lte('created_at', endDate.toISOString());
+
+          clearTimeout(timeout);
+          
+          if (error) throw error;
+          resolve(products);
+        } catch (error) {
+          clearTimeout(timeout);
+          reject(error);
+        }
+      });
+
+      const products = await productsPromise;
+
+      if (!products || !Array.isArray(products)) {
+        console.log('No products found or invalid response');
         return [];
       }
 
@@ -74,12 +96,26 @@ const ProductHealthAnalysis = () => {
       return dailyData;
     } catch (error) {
       console.error('Error in fetchAnalysisData:', error);
+      // Enhance error handling with specific error types
+      if (error.message?.includes('JWT')) {
+        throw new Error('Authentication expired. Please refresh the page.');
+      } else if (error.message?.includes('timeout')) {
+        throw new Error(`Connection timeout. Please try again. (Attempt ${retryCount + 1})`);
+      } else if (error.message === 'Failed to fetch') {
+        throw new Error('Network connection lost. Please check your internet connection.');
+      }
       throw error;
     }
   };
 
-  const { data, isLoading, isError, error } = useQuery({
-    queryKey: ['productAnalysis'],
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    refetch
+  } = useQuery({
+    queryKey: ['productAnalysis', retryCount],
     queryFn: fetchAnalysisData,
     refetchInterval: 30000,
     staleTime: 25000,
@@ -90,7 +126,9 @@ const ProductHealthAnalysis = () => {
     }
   });
 
+  // Enhanced real-time subscription
   React.useEffect(() => {
+    console.log('Setting up real-time subscription...');
     const channel = supabase
       .channel('schema-db-changes')
       .on(
@@ -102,38 +140,63 @@ const ProductHealthAnalysis = () => {
         },
         (payload) => {
           console.log('Received database change:', payload);
+          refetch();
           toast({
             title: "Data Updated",
             description: "Product distribution chart has been updated with new data.",
           });
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          console.log('Successfully subscribed to real-time updates');
+        }
+      });
 
     return () => {
+      console.log('Cleaning up real-time subscription...');
       supabase.removeChannel(channel);
     };
-  }, [toast]);
+  }, [toast, refetch]);
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+    refetch();
+  };
 
   if (isError && error instanceof Error) {
     const isAuthError = error.message.includes('Authentication') || error.message.includes('JWT');
+    const isConnectionError = error.message.includes('timeout') || error.message.includes('Failed to fetch');
     
     return (
       <Alert variant="destructive" className="m-4">
         <AlertCircle className="h-4 w-4" />
-        <AlertTitle>{isAuthError ? 'Authentication Error' : 'Connection Error'}</AlertTitle>
+        <AlertTitle>
+          {isAuthError ? 'Authentication Error' : isConnectionError ? 'Connection Error' : 'Error'}
+        </AlertTitle>
         <AlertDescription className="mt-2">
           {error.message || 'Failed to fetch analysis data. Please try again later.'}
-          {isAuthError && (
-            <div className="mt-2">
-              <button 
+          <div className="mt-4 flex items-center gap-2">
+            <Button 
+              onClick={handleRetry}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Retry Connection
+            </Button>
+            {isAuthError && (
+              <Button 
                 onClick={() => window.location.reload()} 
-                className="text-white underline hover:no-underline"
+                variant="outline"
+                size="sm"
               >
-                Refresh page
-              </button>
-            </div>
-          )}
+                Refresh Page
+              </Button>
+            )}
+          </div>
         </AlertDescription>
       </Alert>
     );
