@@ -1,19 +1,12 @@
 import { corsHeaders } from './cors.ts';
 
-// Token counting helper (approximation based on GPT tokenization rules)
 const countTokens = (text: string): number => {
-  // GPT models process text as tokens, which can be words or parts of words
-  // This is a simplified approximation - about 4 characters per token
   return Math.ceil(text.length / 4);
 };
 
-// Calculate costs based on current OpenAI pricing for GPT-4o-mini
 const calculateTokenCost = (tokens: number, isInput: boolean) => {
-  // GPT-4o-mini pricing:
-  // Input tokens: $0.00025 / 1K tokens
-  // Output tokens: $0.00075 / 1K tokens
-  const inputRate = 0.00025 / 1000; // $0.00025 per 1K tokens
-  const outputRate = 0.00075 / 1000; // $0.00075 per 1K tokens
+  const inputRate = 0.00025 / 1000;
+  const outputRate = 0.00075 / 1000;
   return tokens * (isInput ? inputRate : outputRate);
 };
 
@@ -21,29 +14,30 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
   console.log(`[${new Date().toISOString()}] Starting deep analysis for: ${product.name}`);
   
   try {
-    const systemPrompt = `You are a product safety expert. Analyze this product and return ONLY a valid JSON object with these exact fields: 
-      healthScore (number 0-100), 
-      category (string: healthy/restricted/harmful), 
-      summary (string), 
-      pros (string array), 
-      cons (string array), 
-      allergyRisks (string array), 
-      drugInteractions (string array), 
-      populationWarnings (string array), 
-      environmentalImpact (string), 
-      safetyIncidents (string array), 
-      hasFatalIncidents (boolean), 
-      hasSeriousAdverseEvents (boolean). 
-      Be thorough and realistic in your analysis. No markdown formatting or explanation.`;
+    const systemPrompt = `You are a product safety expert. Analyze this product and return a valid JSON object with these fields:
+      {
+        "healthScore": number between 0-100,
+        "category": "healthy" or "restricted" or "harmful",
+        "summary": string,
+        "pros": string array,
+        "cons": string array,
+        "allergyRisks": string array,
+        "drugInteractions": string array,
+        "populationWarnings": string array,
+        "environmentalImpact": string,
+        "safetyIncidents": string array,
+        "hasFatalIncidents": boolean,
+        "hasSeriousAdverseEvents": boolean
+      }
+      Be thorough and realistic. Return ONLY valid JSON.`;
 
-    const userPrompt = `Analyze this product thoroughly:
+    const userPrompt = `Product Details:
       Name: ${product.name}
-      Description: ${product.description}
-      Known Ingredients: ${product.known_ingredients?.join(', ')}
-      Initial Safety Concerns: ${product.initial_safety_concerns?.join(', ')}
-      Potential Risks: ${product.potential_risks?.join(', ')}`;
+      Description: ${product.description || 'No description provided'}
+      Known Ingredients: ${product.known_ingredients?.join(', ') || 'No ingredients listed'}
+      Initial Safety Concerns: ${product.initial_safety_concerns?.join(', ') || 'None reported'}
+      Potential Risks: ${product.potential_risks?.join(', ') || 'None identified'}`;
     
-    // Calculate input tokens and cost
     const inputTokens = countTokens(systemPrompt + userPrompt);
     const inputCost = calculateTokenCost(inputTokens, true);
     
@@ -79,28 +73,44 @@ export async function analyzeProduct(openAIApiKey: string, product: any) {
       throw new Error('No content received from OpenAI');
     }
 
-    // Calculate output tokens and cost
+    // Validate JSON before parsing
+    let cleanedContent = content.trim();
+    // Remove any markdown code block markers if present
+    cleanedContent = cleanedContent.replace(/```json\n?|\n?```/g, '');
+    
+    console.log(`[${new Date().toISOString()}] Raw analysis response:`, cleanedContent);
+
+    const analysis = JSON.parse(cleanedContent);
+    
+    // Calculate costs
     const outputTokens = countTokens(content);
     const outputCost = calculateTokenCost(outputTokens, false);
     const totalCost = inputCost + outputCost;
     
-    console.log(`[${new Date().toISOString()}] Analysis output cost estimate: $${outputCost.toFixed(6)} (${outputTokens} tokens)`);
+    console.log(`[${new Date().toISOString()}] Analysis output cost: $${outputCost.toFixed(6)} (${outputTokens} tokens)`);
     console.log(`[${new Date().toISOString()}] Total analysis cost: $${totalCost.toFixed(6)}`);
 
-    // Parse and validate the analysis
-    const analysis = JSON.parse(content);
-    analysis.analysis_cost = totalCost;
+    // Validate and sanitize the analysis object
+    const sanitizedAnalysis = {
+      healthScore: Number(analysis.healthScore) || 0,
+      category: ['healthy', 'restricted', 'harmful'].includes(analysis.category?.toLowerCase()) 
+        ? analysis.category.toLowerCase() 
+        : 'restricted',
+      summary: String(analysis.summary || ''),
+      pros: Array.isArray(analysis.pros) ? analysis.pros.map(String) : [],
+      cons: Array.isArray(analysis.cons) ? analysis.cons.map(String) : [],
+      allergyRisks: Array.isArray(analysis.allergyRisks) ? analysis.allergyRisks.map(String) : [],
+      drugInteractions: Array.isArray(analysis.drugInteractions) ? analysis.drugInteractions.map(String) : [],
+      populationWarnings: Array.isArray(analysis.populationWarnings) ? analysis.populationWarnings.map(String) : [],
+      environmentalImpact: String(analysis.environmentalImpact || ''),
+      safetyIncidents: Array.isArray(analysis.safetyIncidents) ? analysis.safetyIncidents.map(String) : [],
+      hasFatalIncidents: Boolean(analysis.hasFatalIncidents),
+      hasSeriousAdverseEvents: Boolean(analysis.hasSeriousAdverseEvents),
+      analysis_cost: totalCost
+    };
     
-    // Validate required fields
-    const requiredFields = ['healthScore', 'category', 'summary', 'pros', 'cons'];
-    for (const field of requiredFields) {
-      if (!analysis[field]) {
-        throw new Error(`Missing required field in analysis: ${field}`);
-      }
-    }
-    
-    console.log(`[${new Date().toISOString()}] Completed deep analysis for: ${product.name}`);
-    return analysis;
+    console.log(`[${new Date().toISOString()}] Completed analysis for: ${product.name}`);
+    return sanitizedAnalysis;
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error in analyzeProduct:`, error);
     throw error;

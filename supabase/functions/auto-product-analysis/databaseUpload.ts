@@ -7,33 +7,42 @@ export async function uploadToDatabase(
   product: any, 
   analysis: any
 ) {
-  console.log(`[${new Date().toISOString()}] Uploading product to database: ${product.name}`);
+  console.log(`[${new Date().toISOString()}] Starting database upload for: ${product.name}`);
+  console.log(`[${new Date().toISOString()}] Analysis data:`, JSON.stringify(analysis, null, 2));
   
   try {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
+    const productData = {
+      name: String(product.name),
+      amazon_url: product.amazon_url ? String(product.amazon_url) : null,
+      ingredients: Array.isArray(product.known_ingredients) ? product.known_ingredients.map(String) : [],
+      category: analysis.category,
+      health_score: Number(analysis.healthScore),
+      analysis_summary: String(analysis.summary),
+      pros: Array.isArray(analysis.pros) ? analysis.pros : [],
+      cons: Array.isArray(analysis.cons) ? analysis.cons : [],
+      allergy_risks: Array.isArray(analysis.allergyRisks) ? analysis.allergyRisks : [],
+      drug_interactions: Array.isArray(analysis.drugInteractions) ? analysis.drugInteractions : [],
+      special_population_warnings: Array.isArray(analysis.populationWarnings) ? analysis.populationWarnings : [],
+      environmental_impact: String(analysis.environmentalImpact || ''),
+      safety_incidents: Array.isArray(analysis.safetyIncidents) ? analysis.safetyIncidents : [],
+      has_fatal_incidents: Boolean(analysis.hasFatalIncidents),
+      has_serious_adverse_events: Boolean(analysis.hasSeriousAdverseEvents),
+      analysis_cost: Number(analysis.analysis_cost) || 0,
+      created_at: new Date().toISOString()
+    };
+
+    console.log(`[${new Date().toISOString()}] Prepared product data:`, JSON.stringify(productData, null, 2));
+
     const { error } = await supabase
       .from('products')
-      .insert([{
-        name: product.name,
-        amazon_url: product.amazon_url,
-        ingredients: product.known_ingredients,
-        category: analysis.category?.toLowerCase(),
-        health_score: analysis.healthScore,
-        analysis_summary: analysis.summary,
-        pros: analysis.pros,
-        cons: analysis.cons,
-        allergy_risks: analysis.allergyRisks,
-        drug_interactions: analysis.drugInteractions,
-        special_population_warnings: analysis.populationWarnings,
-        environmental_impact: analysis.environmentalImpact,
-        safety_incidents: analysis.safetyIncidents || [],
-        has_fatal_incidents: analysis.hasFatalIncidents || false,
-        has_serious_adverse_events: analysis.hasSeriousAdverseEvents || false,
-        created_at: new Date().toISOString()
-      }]);
+      .insert([productData]);
 
-    if (error) throw error;
+    if (error) {
+      console.error(`[${new Date().toISOString()}] Database error:`, error);
+      throw error;
+    }
     
     console.log(`[${new Date().toISOString()}] Successfully uploaded: ${product.name}`);
   } catch (error) {
