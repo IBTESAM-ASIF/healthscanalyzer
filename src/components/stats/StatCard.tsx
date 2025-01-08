@@ -34,7 +34,7 @@ export const StatCard = ({ stat }: StatCardProps) => {
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
             transition={{ duration: 1, ease: "easeOut" }}
-            className={`h-full ${iconColorClass.replace('text', 'bg')}/20`}
+            className={`h-full ${backgroundColorClass}`}
           />
         </div>
       </div>
